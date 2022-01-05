@@ -68,7 +68,7 @@ Example:
 * Net amount: 8,39 EUR
     * Calculated gross amount: 9,98 EUR (8,39 * 1,19 = rounded 9,98)
 
-The method fromNetAndGrossAmount, which calculates VAT independently, does not exist because the calculation is not reliable. There are countries with VAT rates that have decimal places. If these are
+The method `fromNetAndGrossAmount`, which calculates VAT independently, does not exist because the calculation is not reliable. There are countries with VAT rates that have decimal places. If these are
 taken into account, rounding can result in incorrect VAT rates.
 
 Example:
