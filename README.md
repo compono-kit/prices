@@ -1,7 +1,12 @@
 # Prices
 
 PHP types representing prices including gross amount, net amount, vat amount and vat rate A price include the gross, net and VAT amount, as well as the VAT rate. The missing values are automatically
-calculated by the class depending on the instantiation method.
+calculated by the class depending on the instantiation method. 
+
+## Requirements
+
+* PHP >=7.4
+* moneyphp/money
 
 ## Instantiation
 
