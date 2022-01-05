@@ -1,0 +1,45 @@
+{
+	"name": "hansel23/prices",
+	"description": "Price interfaces and implementations",
+	"minimum-stability": "dev",
+	"prefer-stable": true,
+	"license": "proprietary",
+	"authors": [
+		{
+			"name": "Benjamin Bruska",
+			"email": "benjamin.bruska@your-coder.de"
+		}
+	],
+	"require": {
+		"php": ">=7.4",
+		"moneyphp/money": "^3.3.1"
+	},
+	"require-dev": {
+		"roave/security-advisories": "dev-latest",
+		"tm/tooly-composer-script": "^1.4.1",
+		"ext-json": "*"
+	},
+	"autoload": {
+		"psr-4": {
+			"Hansel23\\Prices\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Hansel23\\Prices\\Tests\\": "tests/"
+		}
+	},
+	"scripts": {
+		"post-install-cmd": "Tooly\\ScriptHandler::installPharTools",
+		"post-update-cmd": "Tooly\\ScriptHandler::installPharTools"
+	},
+	"extra": {
+		"tools": {
+			"phpunit": {
+				"url": "https://phar.phpunit.de/phpunit-9.phar",
+				"only-dev": true,
+				"force-replace": true
+			}
+		}
+	}
+}
