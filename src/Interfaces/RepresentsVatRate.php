@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Hansel23\Prices\Interfaces;
+namespace Componium\Prices\Interfaces;
 
 interface RepresentsVatRate
 {

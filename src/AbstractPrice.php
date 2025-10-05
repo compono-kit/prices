@@ -1,22 +1,25 @@
 <?php declare(strict_types=1);
 
-namespace Hansel23\Prices;
+namespace Componium\Prices;
 
-use Hansel23\Prices\Exceptions\InvalidPriceException;
-use Hansel23\Prices\Interfaces\RepresentsPrice;
-use Hansel23\Prices\Interfaces\RepresentsVatRate;
+use Componium\Prices\Exceptions\InvalidPriceException;
+use Componium\Prices\Interfaces\RepresentsMoney;
+use Componium\Prices\Interfaces\RepresentsPrice;
+use Componium\Prices\Interfaces\RepresentsVatRate;
+use JetBrains\PhpStorm\ArrayShape;
+use JetBrains\PhpStorm\Pure;
 use Money\Currency;
 use Money\Money;
 
 abstract class AbstractPrice implements RepresentsPrice, \JsonSerializable
 {
-	protected Money   $netAmount;
+	protected RepresentsMoney   $netAmount;
 
-	protected Money   $grossAmount;
+	protected RepresentsMoney   $grossAmount;
 
 	protected RepresentsVatRate $vatRate;
 
-	final protected function __construct( Money $netAmount, Money $grossAmount, RepresentsVatRate $vatRate )
+	final protected function __construct( RepresentsMoney $netAmount, RepresentsMoney $grossAmount, RepresentsVatRate $vatRate )
 	{
 		$this->netAmount   = $netAmount;
 		$this->grossAmount = $grossAmount;
@@ -24,12 +27,12 @@ abstract class AbstractPrice implements RepresentsPrice, \JsonSerializable
 	}
 
 	/**
-	 * @param Money   $netAmount
+	 * @param RepresentsMoney   $netAmount
 	 * @param RepresentsVatRate $vatRate
 	 *
 	 * @return static
 	 */
-	public static function fromNetAmount( Money $netAmount, RepresentsVatRate $vatRate ): self
+	public static function fromNetAmount( RepresentsMoney $netAmount, RepresentsVatRate $vatRate ): self
 	{
 		return new static(
 			$netAmount,
@@ -83,12 +86,12 @@ abstract class AbstractPrice implements RepresentsPrice, \JsonSerializable
 		return $this->vatRate;
 	}
 
-	public function getCurrency(): Currency
+	#[Pure] public function getCurrency(): Currency
 	{
 		return $this->grossAmount->getCurrency();
 	}
 
-	public function jsonSerialize(): array
+	#[ArrayShape([ 'currency' => "string", 'netAmount' => "string", 'grossAmount' => "string", 'vatAmount' => "string", 'vatRate' => "float" ])] public function jsonSerialize(): array
 	{
 		return [
 			'currency'    => $this->getGrossAmount()->getCurrency()->getCode(),

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Hansel23\Prices;
+namespace Componium\Prices;
 
-use Hansel23\Prices\Exceptions\InvalidVatRateException;
-use Hansel23\Prices\Interfaces\RepresentsVatRate;
+use Componium\Prices\Exceptions\InvalidVatRateException;
+use Componium\Prices\Interfaces\RepresentsVatRate;
 
 class VatRate implements RepresentsVatRate
 {

@@ -2,6 +2,7 @@
 
 namespace Componium\Prices\Exceptions;
 
-class InvalidVatRateException extends \LogicException
+class InvalidCurrencyException extends \LogicException
 {
+
 }

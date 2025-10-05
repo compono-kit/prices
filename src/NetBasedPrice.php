@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Hansel23\Prices;
+namespace Componium\Prices;
 
-use Hansel23\Prices\Exceptions\InvalidPriceException;
-use Hansel23\Prices\Interfaces\RepresentsPrice;
+use Componium\Prices\Exceptions\InvalidPriceException;
+use Componium\Prices\Interfaces\RepresentsPrice;
 
 class NetBasedPrice extends AbstractPrice
 {
@@ -23,7 +23,7 @@ class NetBasedPrice extends AbstractPrice
 	 * @return RepresentsPrice|static
 	 * @throws InvalidPriceException
 	 */
-	public function add( RepresentsPrice $price ): RepresentsPrice
+	public function add( RepresentsPrice $price ): static|RepresentsPrice
 	{
 		$this->validatePrice( $price );
 
@@ -36,7 +36,7 @@ class NetBasedPrice extends AbstractPrice
 	 * @return RepresentsPrice|static
 	 * @throws InvalidPriceException
 	 */
-	public function subtract( RepresentsPrice $price ): RepresentsPrice
+	public function subtract( RepresentsPrice $price ): static|RepresentsPrice
 	{
 		$this->validatePrice( $price );
 
@@ -46,7 +46,7 @@ class NetBasedPrice extends AbstractPrice
 	/**
 	 * @param int $targetCount
 	 *
-	 * @return \Iterator|static[]
+	 * @return \Iterator<static>
 	 */
 	public function allocateToTargets( int $targetCount ): \Iterator
 	{
@@ -59,7 +59,7 @@ class NetBasedPrice extends AbstractPrice
 	/**
 	 * @param array|int[] $ratios
 	 *
-	 * @return \Iterator|static[]
+	 * @return \Iterator<static>
 	 */
 	public function allocateByRatios( array $ratios ): \Iterator
 	{

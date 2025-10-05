@@ -1,22 +1,20 @@
 <?php declare(strict_types=1);
 
-namespace Hansel23\Prices\Interfaces;
+namespace Componium\Prices\Interfaces;
 
-use Hansel23\Prices\Exceptions\InvalidPriceException;
-use Money\Currency;
-use Money\Money;
+use Componium\Prices\Exceptions\InvalidPriceException;
 
 interface RepresentsPrice
 {
-	public function getNetAmount(): Money;
+	public function getNetAmount(): RepresentsMoney;
 
-	public function getGrossAmount(): Money;
+	public function getGrossAmount(): RepresentsMoney;
 
-	public function getVatAmount(): Money;
+	public function getVatAmount(): RepresentsMoney;
 
 	public function getVatRate(): RepresentsVatRate;
 
-	public function getCurrency(): Currency;
+	public function getCurrency(): RepresentsCurrency;
 
 	public function multiply( float $quantity ): RepresentsPrice;
 

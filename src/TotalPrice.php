@@ -1,28 +1,24 @@
 <?php declare(strict_types=1);
 
-namespace Hansel23\Prices;
+namespace Componium\Prices;
 
-use Hansel23\Prices\Interfaces\RepresentsPrice;
-use Hansel23\Prices\Interfaces\RepresentsTotalPrice;
-use Hansel23\Prices\Interfaces\RepresentsVatRate;
+use Componium\Prices\Interfaces\RepresentsCurrency;
+use Componium\Prices\Interfaces\RepresentsMoney;
+use Componium\Prices\Interfaces\RepresentsPrice;
+use Componium\Prices\Interfaces\RepresentsTotalPrice;
+use Componium\Prices\Interfaces\RepresentsVatRate;
+use JetBrains\PhpStorm\Pure;
 use Money\Currency;
 use Money\Money;
 
 class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 {
-	/** @var RepresentsPrice[] */
-	private array    $prices;
-
-	private Currency $currency;
-
 	/**
-	 * @param Currency          $currency
-	 * @param RepresentsPrice[] $prices
+	 * @param RepresentsCurrency          $currency
+	 * @param array<int, RepresentsPrice> $prices
 	 */
-	public function __construct( Currency $currency, array $prices = [] )
+	public function __construct( private readonly RepresentsCurrency $currency, private readonly array $prices = [] )
 	{
-		$this->currency = $currency;
-		$this->prices   = $prices;
 	}
 
 	/**
@@ -57,6 +53,7 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 	 *
 	 * @return static
 	 */
+	#[Pure]
 	public function addPrice( RepresentsPrice $price ): self
 	{
 		$allPrices   = $this->prices;
@@ -65,7 +62,7 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 		return new static( $this->currency, $allPrices );
 	}
 
-	public function getTotalGrossAmount(): Money
+	public function getTotalGrossAmount(): RepresentsMoney
 	{
 		$totalGrossAmount = new Money( 0, $this->currency );
 		foreach ( $this->prices as $price )
@@ -76,7 +73,7 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 		return $totalGrossAmount;
 	}
 
-	public function getTotalNetAmount(): Money
+	public function getTotalNetAmount(): RepresentsMoney
 	{
 		$totalNetAmount = new Money( 0, $this->currency );
 		foreach ( $this->prices as $price )
@@ -87,9 +84,9 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 		return $totalNetAmount;
 	}
 
-	public function getTotalVatAmount(): Money
+	public function getTotalVatAmount(): RepresentsMoney
 	{
-		$totalVatAmount = new Money( 0, $this->currency );
+		$totalVatAmount = new Money( 0, new Currency( $this->currency->getIsoCode() ) );
 		foreach ( $this->prices as $price )
 		{
 			$totalVatAmount = $totalVatAmount->add( $price->getVatAmount() );
@@ -114,7 +111,7 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 		return array_values( $vatRates );
 	}
 
-	public function getCurrency(): Currency
+	public function getCurrency(): RepresentsCurrency
 	{
 		return $this->currency;
 	}

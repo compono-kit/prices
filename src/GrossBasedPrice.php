@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Hansel23\Prices;
+namespace Componium\Prices;
 
-use Hansel23\Prices\Exceptions\InvalidPriceException;
-use Hansel23\Prices\Interfaces\RepresentsPrice;
+use Componium\Prices\Exceptions\InvalidPriceException;
+use Componium\Prices\Interfaces\RepresentsPrice;
 
 class GrossBasedPrice extends AbstractPrice
 {
@@ -23,7 +23,7 @@ class GrossBasedPrice extends AbstractPrice
 	 * @return RepresentsPrice|static
 	 * @throws InvalidPriceException
 	 */
-	public function add( RepresentsPrice $price ): RepresentsPrice
+	public function add( RepresentsPrice $price ): static|RepresentsPrice
 	{
 		$this->validatePrice( $price );
 
@@ -36,7 +36,7 @@ class GrossBasedPrice extends AbstractPrice
 	 * @return RepresentsPrice|static
 	 * @throws InvalidPriceException
 	 */
-	public function subtract( RepresentsPrice $price ): RepresentsPrice
+	public function subtract( RepresentsPrice $price ): static|RepresentsPrice
 	{
 		$this->validatePrice( $price );
 
@@ -48,7 +48,7 @@ class GrossBasedPrice extends AbstractPrice
 	 *
 	 * @return \Iterator|static[]
 	 */
-	public function allocateToTargets( int $targetCount ): \Iterator
+	public function allocateToTargets( int $targetCount ): \Iterator|array
 	{
 		foreach ( $this->grossAmount->allocateTo( $targetCount ) as $allocatedMoney )
 		{
@@ -61,7 +61,7 @@ class GrossBasedPrice extends AbstractPrice
 	 *
 	 * @return \Iterator|static[]
 	 */
-	public function allocateByRatios( array $ratios ): \Iterator
+	public function allocateByRatios( array $ratios ): array|\Iterator
 	{
 		foreach ( $this->grossAmount->allocate( $ratios ) as $allocatedMoney )
 		{

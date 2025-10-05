@@ -1,9 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Hansel23\Prices\Interfaces;
-
-use Money\Currency;
-use Money\Money;
+namespace Componium\Prices\Interfaces;
 
 interface RepresentsTotalPrice
 {
@@ -11,18 +8,18 @@ interface RepresentsTotalPrice
 
 	public function addPrice( RepresentsPrice $price ): RepresentsTotalPrice;
 
-	public function getTotalGrossAmount(): Money;
+	public function getTotalGrossAmount(): RepresentsMoney;
 
-	public function getTotalNetAmount(): Money;
+	public function getTotalNetAmount(): RepresentsMoney;
 
-	public function getTotalVatAmount(): Money;
+	public function getTotalVatAmount(): RepresentsMoney;
 
 	/**
 	 * @return RepresentsVatRate[]
 	 */
 	public function getVatRates(): array;
 
-	public function getCurrency(): Currency;
+	public function getCurrency(): RepresentsCurrency;
 
 	/**
 	 * @return RepresentsPrice[][] (int[] => RepresentsPrice)

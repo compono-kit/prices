@@ -254,3 +254,10 @@ json_encode( $totalPrice, JSON_PRETTY_PRINT );
 }
 **/
 ````
+
+## Docker
+
+* `docker-compose build --build-arg GITHUB_TOKEN="{TOKEN}"`
+* `docker-compose up -d`
+* `docker-compose run --rm prices_composer update -vvv` or `docker exec -it prices_composer sh` and run there `composer update -vvv`
+

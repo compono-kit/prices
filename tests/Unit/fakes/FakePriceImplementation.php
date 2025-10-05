@@ -31,7 +31,7 @@ class FakePriceImplementation extends AbstractPrice
 		return $price;
 	}
 
-	public function allocateToTargets( int $targetCount ): \Iterator
+	public function allocateToTargets( int $targetCount ): \Iterator|array
 	{
 		yield;
 	}

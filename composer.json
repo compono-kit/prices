@@ -1,5 +1,5 @@
 {
-	"name": "hansel23/prices",
+	"name": "componium/prices",
 	"description": "Price interfaces and implementations",
 	"minimum-stability": "dev",
 	"prefer-stable": true,
@@ -11,8 +11,8 @@
 		}
 	],
 	"require": {
-		"php": ">=7.4",
-		"moneyphp/money": "^3.3.1"
+		"php": ">=8.4",
+		"componium/money": "dev-development"
 	},
 	"require-dev": {
 		"roave/security-advisories": "dev-latest",
@@ -21,22 +21,28 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"Hansel23\\Prices\\": "src/"
+			"Componium\\Prices\\": "src/"
 		}
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"Hansel23\\Prices\\Tests\\": "tests/"
+			"Componium\\Prices\\Tests\\": "tests/"
 		}
 	},
 	"scripts": {
 		"post-install-cmd": "Tooly\\ScriptHandler::installPharTools",
 		"post-update-cmd": "Tooly\\ScriptHandler::installPharTools"
 	},
+	"repositories": {
+		"componium/money": {
+			"type": "vcs",
+			"url": "git@github.com:Hansel23/money.git"
+		}
+	},
 	"extra": {
 		"tools": {
 			"phpunit": {
-				"url": "https://phar.phpunit.de/phpunit-9.phar",
+				"url": "https://phar.phpunit.de/phpunit-11.phar",
 				"only-dev": true,
 				"force-replace": true
 			}
