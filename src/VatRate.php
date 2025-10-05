@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Componium\Prices;
+namespace ComponoKit\Prices;
 
-use Componium\Prices\Exceptions\InvalidVatRateException;
-use Componium\Prices\Interfaces\RepresentsVatRate;
+use ComponoKit\Prices\Exceptions\InvalidVatRateException;
+use ComponoKit\Prices\Interfaces\RepresentsVatRate;
 
 class VatRate implements RepresentsVatRate
 {
@@ -26,12 +26,7 @@ class VatRate implements RepresentsVatRate
 		return (string)$this->value;
 	}
 
-	/**
-	 * @param int $value
-	 *
-	 * @return static
-	 */
-	public static function fromInt( int $value ): self
+	public static function fromInt( int $value ): static
 	{
 		return new static( $value / 100 );
 	}

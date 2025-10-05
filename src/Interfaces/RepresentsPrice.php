@@ -1,8 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Componium\Prices\Interfaces;
+namespace ComponoKit\Prices\Interfaces;
 
-use Componium\Prices\Exceptions\InvalidPriceException;
+use ComponoKit\Money\Interfaces\RepresentsCurrency;
+use ComponoKit\Money\Interfaces\RepresentsMoney;
+use ComponoKit\Prices\Exceptions\InvalidPriceException;
 
 interface RepresentsPrice
 {
@@ -21,34 +23,24 @@ interface RepresentsPrice
 	public function divide( float $quantity ): RepresentsPrice;
 
 	/**
-	 * @param RepresentsPrice $price
-	 *
-	 * @return RepresentsPrice
-	 *
 	 * @throws InvalidPriceException
 	 */
 	public function add( RepresentsPrice $price ): RepresentsPrice;
 
 	/**
-	 * @param RepresentsPrice $price
-	 *
-	 * @return RepresentsPrice
-	 *
 	 * @throws InvalidPriceException
 	 */
 	public function subtract( RepresentsPrice $price ): RepresentsPrice;
 
 	/**
-	 * @param int $targetCount
-	 *
-	 * @return \Iterator|RepresentsPrice[]
+	 * @return \Iterator<int,RepresentsPrice>
 	 */
-	public function allocateToTargets( int $targetCount ): \Iterator;
+	public function allocateToTargets( int $numberOfTargets ): \Iterator;
 
 	/**
-	 * @param array|int[] $ratios
+	 * @param array<int,int> $ratios
 	 *
-	 * @return \Iterator|RepresentsPrice[]
+	 * @return \Iterator<int,RepresentsPrice>
 	 */
 	public function allocateByRatios( array $ratios ): \Iterator;
 }

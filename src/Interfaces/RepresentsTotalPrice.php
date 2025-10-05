@@ -1,6 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Componium\Prices\Interfaces;
+namespace ComponoKit\Prices\Interfaces;
+
+use ComponoKit\Money\Interfaces\RepresentsCurrency;
+use ComponoKit\Money\Interfaces\RepresentsMoney;
 
 interface RepresentsTotalPrice
 {

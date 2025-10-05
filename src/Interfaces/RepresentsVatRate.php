@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Componium\Prices\Interfaces;
+namespace ComponoKit\Prices\Interfaces;
 
 interface RepresentsVatRate
 {

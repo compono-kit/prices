@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Componium\Prices;
+namespace ComponoKit\Prices;
 
-use Componium\Prices\Exceptions\InvalidPriceException;
-use Componium\Prices\Interfaces\RepresentsPrice;
+use ComponoKit\Prices\Exceptions\InvalidPriceException;
+use ComponoKit\Prices\Interfaces\RepresentsPrice;
 
 class NetBasedPrice extends AbstractPrice
 {
@@ -18,12 +18,9 @@ class NetBasedPrice extends AbstractPrice
 	}
 
 	/**
-	 * @param RepresentsPrice $price
-	 *
-	 * @return RepresentsPrice|static
 	 * @throws InvalidPriceException
 	 */
-	public function add( RepresentsPrice $price ): static|RepresentsPrice
+	public function add( RepresentsPrice $price ): static
 	{
 		$this->validatePrice( $price );
 
@@ -31,12 +28,9 @@ class NetBasedPrice extends AbstractPrice
 	}
 
 	/**
-	 * @param RepresentsPrice $price
-	 *
-	 * @return RepresentsPrice|static
 	 * @throws InvalidPriceException
 	 */
-	public function subtract( RepresentsPrice $price ): static|RepresentsPrice
+	public function subtract( RepresentsPrice $price ): static
 	{
 		$this->validatePrice( $price );
 
@@ -44,26 +38,24 @@ class NetBasedPrice extends AbstractPrice
 	}
 
 	/**
-	 * @param int $targetCount
-	 *
-	 * @return \Iterator<static>
+	 * @return \Iterator<int,static>
 	 */
-	public function allocateToTargets( int $targetCount ): \Iterator
+	public function allocateToTargets( int $numberOfTargets ): \Iterator
 	{
-		foreach ( $this->netAmount->allocateTo( $targetCount ) as $allocatedMoney )
+		foreach ( $this->netAmount->allocateToTargets( $numberOfTargets ) as $allocatedMoney )
 		{
 			yield static::fromNetAmount( $allocatedMoney, $this->vatRate );
 		}
 	}
 
 	/**
-	 * @param array|int[] $ratios
+	 * @param array<int,int> $ratios
 	 *
-	 * @return \Iterator<static>
+	 * @return \Iterator<int, static>
 	 */
 	public function allocateByRatios( array $ratios ): \Iterator
 	{
-		foreach ( $this->netAmount->allocate( $ratios ) as $allocatedMoney )
+		foreach ( $this->netAmount->allocateByRatios( $ratios ) as $allocatedMoney )
 		{
 			yield static::fromNetAmount( $allocatedMoney, $this->vatRate );
 		}

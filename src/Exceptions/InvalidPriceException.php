@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Componium\Prices\Exceptions;
+namespace ComponoKit\Prices\Exceptions;
 
 class InvalidPriceException extends \LogicException
 {

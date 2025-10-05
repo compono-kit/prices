@@ -1,15 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Componium\Prices;
+namespace ComponoKit\Prices;
 
-use Componium\Prices\Exceptions\InvalidPriceException;
-use Componium\Prices\Interfaces\RepresentsMoney;
-use Componium\Prices\Interfaces\RepresentsPrice;
-use Componium\Prices\Interfaces\RepresentsVatRate;
-use JetBrains\PhpStorm\ArrayShape;
-use JetBrains\PhpStorm\Pure;
-use Money\Currency;
-use Money\Money;
+use ComponoKit\Money\Interfaces\RepresentsCurrency;
+use ComponoKit\Money\Interfaces\RepresentsMoney;
+use ComponoKit\Prices\Exceptions\InvalidPriceException;
+use ComponoKit\Prices\Interfaces\RepresentsPrice;
+use ComponoKit\Prices\Interfaces\RepresentsVatRate;
 
 abstract class AbstractPrice implements RepresentsPrice, \JsonSerializable
 {
@@ -26,13 +23,7 @@ abstract class AbstractPrice implements RepresentsPrice, \JsonSerializable
 		$this->vatRate     = $vatRate;
 	}
 
-	/**
-	 * @param RepresentsMoney   $netAmount
-	 * @param RepresentsVatRate $vatRate
-	 *
-	 * @return static
-	 */
-	public static function fromNetAmount( RepresentsMoney $netAmount, RepresentsVatRate $vatRate ): self
+	public static function fromNetAmount( RepresentsMoney $netAmount, RepresentsVatRate $vatRate ): static
 	{
 		return new static(
 			$netAmount,
@@ -41,13 +32,7 @@ abstract class AbstractPrice implements RepresentsPrice, \JsonSerializable
 		);
 	}
 
-	/**
-	 * @param Money   $grossAmount
-	 * @param RepresentsVatRate $vatRate
-	 *
-	 * @return static
-	 */
-	public static function fromGrossAmount( Money $grossAmount, RepresentsVatRate $vatRate ): self
+	public static function fromGrossAmount( RepresentsMoney $grossAmount, RepresentsVatRate $vatRate ): static
 	{
 		return new static(
 			$grossAmount->divide( 1 + ($vatRate->toFloat() / 100) ),
@@ -56,27 +41,22 @@ abstract class AbstractPrice implements RepresentsPrice, \JsonSerializable
 		);
 	}
 
-	/**
-	 * @param RepresentsPrice $price
-	 *
-	 * @return static
-	 */
-	public static function fromPrice( RepresentsPrice $price ): self
+	public static function fromPrice( RepresentsPrice $price ): static
 	{
 		return new static( $price->getNetAmount(), $price->getGrossAmount(), $price->getVatRate() );
 	}
 
-	public function getNetAmount(): Money
+	public function getNetAmount(): RepresentsMoney
 	{
 		return $this->netAmount;
 	}
 
-	public function getGrossAmount(): Money
+	public function getGrossAmount(): RepresentsMoney
 	{
 		return $this->grossAmount;
 	}
 
-	public function getVatAmount(): Money
+	public function getVatAmount(): RepresentsMoney
 	{
 		return $this->grossAmount->subtract( $this->getNetAmount() );
 	}
@@ -86,15 +66,15 @@ abstract class AbstractPrice implements RepresentsPrice, \JsonSerializable
 		return $this->vatRate;
 	}
 
-	#[Pure] public function getCurrency(): Currency
+	public function getCurrency(): RepresentsCurrency
 	{
 		return $this->grossAmount->getCurrency();
 	}
 
-	#[ArrayShape([ 'currency' => "string", 'netAmount' => "string", 'grossAmount' => "string", 'vatAmount' => "string", 'vatRate' => "float" ])] public function jsonSerialize(): array
+	public function jsonSerialize(): array
 	{
 		return [
-			'currency'    => $this->getGrossAmount()->getCurrency()->getCode(),
+			'currency'    => $this->getGrossAmount()->getCurrency()->getIsoCode(),
 			'netAmount'   => $this->getNetAmount()->getAmount(),
 			'grossAmount' => $this->getGrossAmount()->getAmount(),
 			'vatAmount'   => $this->getVatAmount()->getAmount(),
