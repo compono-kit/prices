@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Hansel23\Prices\Tests\Unit\fakes;
+namespace ComponoKit\Prices\Tests\Unit\fakes;
 
-use Hansel23\Prices\Interfaces\RepresentsPrice;
-use Hansel23\Prices\Interfaces\RepresentsTotalPrice;
+use ComponoKit\Prices\Interfaces\RepresentsPrice;
+use ComponoKit\Prices\Interfaces\RepresentsTotalPrice;
 use Money\Currency;
 use Money\Money;
 

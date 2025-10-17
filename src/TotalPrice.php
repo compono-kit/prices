@@ -2,25 +2,25 @@
 
 namespace ComponoKit\Prices;
 
+use ComponoKit\Money\Interfaces\BuildsMoneys;
 use ComponoKit\Money\Interfaces\RepresentsCurrency;
-use ComponoKit\Money\Money;
+use ComponoKit\Money\Interfaces\RepresentsMoney;
 use ComponoKit\Prices\Interfaces\RepresentsPrice;
 use ComponoKit\Prices\Interfaces\RepresentsTotalPrice;
 use ComponoKit\Prices\Interfaces\RepresentsVatRate;
-use ComponoKit\Money\Interfaces\RepresentsMoney;
 
 class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 {
 	/**
 	 * @param array<int, RepresentsPrice> $prices
 	 */
-	public function __construct( private readonly RepresentsCurrency $currency, private readonly array $prices = [] )
+	public function __construct( private BuildsMoneys $moneyFactory, private RepresentsCurrency $currency, private array $prices = [] )
 	{
 	}
 
 	public static function fromTotalPrice( RepresentsTotalPrice $totalPrice ): static
 	{
-		return new static( $totalPrice->getCurrency(), $totalPrice->getPrices() );
+		return new static( $totalPrice->getMoneyFactory(), $totalPrice->getCurrency(), $totalPrice->getPrices() );
 	}
 
 	public function addTotalPrice( RepresentsTotalPrice $totalPrice ): static
@@ -32,7 +32,7 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 			$allPrices[] = $price;
 		}
 
-		return new static( $this->currency, $allPrices );
+		return new static( $this->moneyFactory, $this->currency, $allPrices );
 	}
 
 	public function addPrice( RepresentsPrice $price ): static
@@ -40,12 +40,12 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 		$allPrices   = $this->prices;
 		$allPrices[] = $price;
 
-		return new static( $this->currency, $allPrices );
+		return new static( $this->moneyFactory, $this->currency, $allPrices );
 	}
 
 	public function getTotalGrossAmount(): RepresentsMoney
 	{
-		$totalGrossAmount = new Money( 0, $this->currency );
+		$totalGrossAmount = $this->moneyFactory->build( 0, $this->currency );
 		foreach ( $this->prices as $price )
 		{
 			$totalGrossAmount = $totalGrossAmount->add( $price->getGrossAmount() );
@@ -56,7 +56,7 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 
 	public function getTotalNetAmount(): RepresentsMoney
 	{
-		$totalNetAmount = new Money( 0, $this->currency );
+		$totalNetAmount = $this->moneyFactory->build( 0, $this->currency );
 		foreach ( $this->prices as $price )
 		{
 			$totalNetAmount = $totalNetAmount->add( $price->getNetAmount() );
@@ -67,7 +67,7 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 
 	public function getTotalVatAmount(): RepresentsMoney
 	{
-		$totalVatAmount = new Money( 0, $this->currency );
+		$totalVatAmount = $this->moneyFactory->build( 0, $this->currency );
 		foreach ( $this->prices as $price )
 		{
 			$totalVatAmount = $totalVatAmount->add( $price->getVatAmount() );
@@ -118,6 +118,11 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 	public function getPrices(): array
 	{
 		return $this->prices;
+	}
+
+	public function getMoneyFactory(): BuildsMoneys
+	{
+		return $this->moneyFactory;
 	}
 
 	public function jsonSerialize(): array

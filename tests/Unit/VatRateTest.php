@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Hansel23\Prices\Tests\Unit;
+namespace ComponoKit\Prices\Tests\Unit;
 
-use Hansel23\Prices\Exceptions\InvalidVatRateException;
-use Hansel23\Prices\VatRate;
+use ComponoKit\Prices\Exceptions\InvalidVatRateException;
+use ComponoKit\Prices\VatRate;
 use PHPUnit\Framework\TestCase;
 
 class VatRateTest extends TestCase

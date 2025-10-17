@@ -11,13 +11,13 @@
 		}
 	],
 	"require": {
-		"php": ">=8.4",
-		"compono-kit/money": "dev-development"
+		"php": ">=8.0",
+		"ext-json": "*",
+		"compono-kit/money-interfaces": "^1.0.0"
 	},
 	"require-dev": {
-		"roave/security-advisories": "dev-latest",
-		"tm/tooly-composer-script": "^1.4.1",
-		"ext-json": "*"
+		"phpunit/phpunit": "^9.0.0",
+		"roave/security-advisories": "dev-latest"
 	},
 	"autoload": {
 		"psr-4": {
@@ -27,25 +27,6 @@
 	"autoload-dev": {
 		"psr-4": {
 			"ComponoKit\\Prices\\Tests\\": "tests/"
-		}
-	},
-	"scripts": {
-		"post-install-cmd": "Tooly\\ScriptHandler::installPharTools",
-		"post-update-cmd": "Tooly\\ScriptHandler::installPharTools"
-	},
-	"repositories": {
-		"compono-kit/money": {
-			"type": "vcs",
-			"url": "git@github.com:compono-kit/money.git"
-		}
-	},
-	"extra": {
-		"tools": {
-			"phpunit": {
-				"url": "https://phar.phpunit.de/phpunit-11.phar",
-				"only-dev": true,
-				"force-replace": true
-			}
 		}
 	}
 }

@@ -1,14 +1,4 @@
 services:
-  prices_lib:
-    build:
-      dockerfile: Dockerfile
-      context: .docker/php
-    container_name: prices_lib
-    restart: no
-    working_dir: /app
-    volumes:
-      - ./:/app
-
   prices_composer:
     build:
       dockerfile: Dockerfile

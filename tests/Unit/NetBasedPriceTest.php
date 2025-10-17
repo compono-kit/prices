@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Hansel23\Prices\Tests\Unit;
+namespace ComponoKit\Prices\Tests\Unit;
 
-use Hansel23\Prices\Exceptions\InvalidPriceException;
-use Hansel23\Prices\Interfaces\RepresentsPrice;
-use Hansel23\Prices\NetBasedPrice;
-use Hansel23\Prices\Tests\Unit\fakes\FakePriceImplementation;
-use Hansel23\Prices\VatRate;
+use ComponoKit\Prices\Exceptions\InvalidPriceException;
+use ComponoKit\Prices\Interfaces\RepresentsPrice;
+use ComponoKit\Prices\NetBasedPrice;
+use ComponoKit\Prices\Tests\Unit\fakes\FakePriceImplementation;
+use ComponoKit\Prices\VatRate;
 use Money\Currency;
 use Money\Money;
 use PHPUnit\Framework\TestCase;

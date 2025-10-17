@@ -2,6 +2,7 @@
 
 namespace ComponoKit\Prices\Interfaces;
 
+use ComponoKit\Money\Interfaces\BuildsMoneys;
 use ComponoKit\Money\Interfaces\RepresentsCurrency;
 use ComponoKit\Money\Interfaces\RepresentsMoney;
 
@@ -33,4 +34,6 @@ interface RepresentsTotalPrice
 	 * @return RepresentsPrice[]
 	 */
 	public function getPrices(): array;
+
+	public function getMoneyFactory(): BuildsMoneys;
 }
