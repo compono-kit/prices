@@ -1,6 +1,6 @@
 {
 	"name": "compono-kit/prices",
-	"description": "Price interfaces and implementations",
+	"description": "Implementations for compono-kit/price-interfaces",
 	"minimum-stability": "dev",
 	"prefer-stable": true,
 	"license": "proprietary",
@@ -13,7 +13,6 @@
 	"require": {
 		"php": ">=8.0",
 		"ext-json": "*",
-		"compono-kit/money-interfaces": "^1.0.0",
 		"compono-kit/price-interfaces": "^1.0.0"
 	},
 	"require-dev": {

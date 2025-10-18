@@ -6,7 +6,6 @@ calculated by the class depending on the instantiation method.
 ## Requirements
 
 * PHP >= 8.0
-* compono-kit/money-interfaces
 * compono-kit/price-interfaces
 
 ## Instantiation
