@@ -5,14 +5,14 @@ namespace ComponoKit\Prices\Tests\Unit;
 use ComponoKit\Prices\Exceptions\InvalidPriceException;
 use ComponoKit\Prices\GrossBasedPrice;
 use ComponoKit\Prices\Interfaces\RepresentsPrice;
-use ComponoKit\Prices\Tests\Unit\fakes\FakePriceImplementation;
+use ComponoKit\Prices\Tests\Unit\fakes\BuildingFakeMoneys;
 use ComponoKit\Prices\VatRate;
-use Money\Currency;
-use Money\Money;
 use PHPUnit\Framework\TestCase;
 
 class GrossBasedPriceTest extends TestCase
 {
+	use BuildingFakeMoneys;
+
 	public function UnitPriceLevelFromGrossMultiplyDataProvider(): array
 	{
 		return [
@@ -33,19 +33,12 @@ class GrossBasedPriceTest extends TestCase
 
 	/**
 	 * @dataProvider UnitPriceLevelFromGrossMultiplyDataProvider
-	 *
-	 * @param int   $unitGrossAmount
-	 * @param float $vatRate
-	 * @param float $quantity
-	 * @param int   $expectedTotalNetAmount
-	 * @param int   $expectedTotalGrossAmount
-	 * @param int   $expectedUnitNetAmount
 	 */
 	public function testCalculatingTaxAfterMultiplyingByQuantityFromGross(
 		int $unitGrossAmount, float $vatRate, float $quantity, int $expectedTotalNetAmount, int $expectedTotalGrossAmount, int $expectedUnitNetAmount
 	): void
 	{
-		$unitPrice  = GrossBasedPrice::fromGrossAmount( new Money( $unitGrossAmount, new Currency( 'EUR' ) ), new VatRate( $vatRate ) );
+		$unitPrice  = GrossBasedPrice::fromGrossAmount( $this->buildMoney( $unitGrossAmount, 'EUR' ), new VatRate( $vatRate ) );
 		$totalPrice = $unitPrice->multiply( $quantity );
 
 		self::assertEquals( $expectedTotalNetAmount, $totalPrice->getNetAmount()->getAmount() );
@@ -73,19 +66,12 @@ class GrossBasedPriceTest extends TestCase
 
 	/**
 	 * @dataProvider UnitPriceLevelFromNetMultiplyDataProvider
-	 *
-	 * @param int   $unitNetAmount
-	 * @param float $vatRate
-	 * @param float $quantity
-	 * @param int   $expectedTotalNetAmount
-	 * @param int   $expectedTotalGrossAmount
-	 * @param int   $expectedUnitGrossAmount
 	 */
 	public function testCalculatingTaxAfterMultiplyingByQuantityFromNet(
 		int $unitNetAmount, float $vatRate, float $quantity, int $expectedTotalNetAmount, int $expectedTotalGrossAmount, int $expectedUnitGrossAmount
 	): void
 	{
-		$unitPrice  = GrossBasedPrice::fromNetAmount( new Money( $unitNetAmount, new Currency( 'EUR' ) ), new VatRate( $vatRate ) );
+		$unitPrice  = GrossBasedPrice::fromNetAmount( $this->buildMoney( $unitNetAmount, 'EUR' ), new VatRate( $vatRate ) );
 		$totalPrice = $unitPrice->multiply( $quantity );
 
 		self::assertEquals( $expectedTotalNetAmount, $totalPrice->getNetAmount()->getAmount() );
@@ -114,19 +100,12 @@ class GrossBasedPriceTest extends TestCase
 
 	/**
 	 * @dataProvider UnitPriceLevelFromGrossDivideDataProvider
-	 *
-	 * @param int   $totalGrossAmount
-	 * @param float $vatRate
-	 * @param float $quantity
-	 * @param int   $expectedUnitNetAmount
-	 * @param int   $expectedUnitGrossAmount
-	 * @param int   $expectedTotalNetAmount
 	 */
 	public function testCalculatingTaxAfterDividingByQuantityFromGross(
 		int $totalGrossAmount, float $vatRate, float $quantity, int $expectedUnitNetAmount, int $expectedUnitGrossAmount, int $expectedTotalNetAmount
 	): void
 	{
-		$totalPrice = GrossBasedPrice::fromGrossAmount( new Money( $totalGrossAmount, new Currency( 'EUR' ) ), new VatRate( $vatRate ) );
+		$totalPrice = GrossBasedPrice::fromGrossAmount( $this->buildMoney( $totalGrossAmount, 'EUR' ), new VatRate( $vatRate ) );
 		$unitPrice  = $totalPrice->divide( $quantity );
 
 		self::assertEquals( $expectedUnitNetAmount, $unitPrice->getNetAmount()->getAmount() );
@@ -154,19 +133,12 @@ class GrossBasedPriceTest extends TestCase
 
 	/**
 	 * @dataProvider UnitPriceLevelFromNetDivideDataProvider
-	 *
-	 * @param int   $totalNetAmount
-	 * @param float $vatRate
-	 * @param float $quantity
-	 * @param int   $expectedUnitNetAmount
-	 * @param int   $expectedUnitGrossAmount
-	 * @param int   $expectedTotalGrossAmount
 	 */
 	public function testCalculatingTaxAfterDividingByQuantityFromNet(
 		int $totalNetAmount, float $vatRate, float $quantity, int $expectedUnitNetAmount, int $expectedUnitGrossAmount, int $expectedTotalGrossAmount
 	): void
 	{
-		$totalPrice = GrossBasedPrice::fromNetAmount( new Money( $totalNetAmount, new Currency( 'EUR' ) ), new VatRate( $vatRate ) );
+		$totalPrice = GrossBasedPrice::fromNetAmount( $this->buildMoney( $totalNetAmount, 'EUR' ), new VatRate( $vatRate ) );
 		$unitPrice  = $totalPrice->divide( $quantity );
 
 		self::assertEquals( $expectedUnitNetAmount, $unitPrice->getNetAmount()->getAmount() );
@@ -179,39 +151,35 @@ class GrossBasedPriceTest extends TestCase
 	{
 		return [
 			[
-				GrossBasedPrice::fromGrossAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromGrossAmount( new Money( 1000, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				GrossBasedPrice::fromGrossAmount( new Money( 4990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 1000, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 4990, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				GrossBasedPrice::fromGrossAmount( new Money( -3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromGrossAmount( new Money( 1000, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				GrossBasedPrice::fromGrossAmount( new Money( -2990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( -3990, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 1000, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( -2990, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				GrossBasedPrice::fromGrossAmount( new Money( -3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromGrossAmount( new Money( 5090, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				GrossBasedPrice::fromGrossAmount( new Money( 1100, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( -3990, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 5090, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 1100, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				GrossBasedPrice::fromGrossAmount( new Money( -3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromGrossAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				GrossBasedPrice::fromGrossAmount( new Money( 0, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( -3990, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				GrossBasedPrice::fromGrossAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromGrossAmount( new Money( 0, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				GrossBasedPrice::fromGrossAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
 			],
 		];
 	}
 
 	/**
 	 * @dataProvider AddingPriceDataProvider
-	 *
-	 * @param GrossBasedPrice $originalPrice
-	 * @param RepresentsPrice $additionalPrice
-	 * @param GrossBasedPrice $expectedPrice
 	 */
 	public function testAddingPrice( GrossBasedPrice $originalPrice, RepresentsPrice $additionalPrice, GrossBasedPrice $expectedPrice ): void
 	{
@@ -224,52 +192,48 @@ class GrossBasedPriceTest extends TestCase
 	{
 		$this->expectException( InvalidPriceException::class );
 
-		$price = GrossBasedPrice::fromGrossAmount( new Money( 100, new Currency( 'EUR' ) ), new VatRate( 19 ) );
-		$price->add( GrossBasedPrice::fromGrossAmount( new Money( 100, new Currency( 'EUR' ) ), new VatRate( 7 ) ) );
+		$price = GrossBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 19 ) );
+		$price->add( GrossBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 7 ) ) );
 	}
 
 	public function SubtractingPriceDataProvider(): array
 	{
 		return [
 			[
-				GrossBasedPrice::fromGrossAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromGrossAmount( new Money( 1000, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				GrossBasedPrice::fromGrossAmount( new Money( 2990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 1000, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 2990, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				GrossBasedPrice::fromGrossAmount( new Money( -3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromGrossAmount( new Money( 1000, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				GrossBasedPrice::fromGrossAmount( new Money( -4990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( -3990, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 1000, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( -4990, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				GrossBasedPrice::fromGrossAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromGrossAmount( new Money( 5000, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				GrossBasedPrice::fromGrossAmount( new Money( -1010, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 5000, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( -1010, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				GrossBasedPrice::fromGrossAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromGrossAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				GrossBasedPrice::fromGrossAmount( new Money( 0, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				GrossBasedPrice::fromGrossAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromGrossAmount( new Money( 0, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				GrossBasedPrice::fromGrossAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				GrossBasedPrice::fromGrossAmount( new Money( -1000, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromGrossAmount( new Money( -1000, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				GrossBasedPrice::fromGrossAmount( new Money( 0, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( -1000, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( -1000, 'EUR' ), new VatRate( 19 ) ),
+				GrossBasedPrice::fromGrossAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
 			],
 		];
 	}
 
 	/**
 	 * @dataProvider SubtractingPriceDataProvider
-	 *
-	 * @param GrossBasedPrice $originalPrice
-	 * @param RepresentsPrice $priceToSubtract
-	 * @param GrossBasedPrice $expectedPrice
 	 */
 	public function testSubtractingPrice( GrossBasedPrice $originalPrice, RepresentsPrice $priceToSubtract, GrossBasedPrice $expectedPrice ): void
 	{
@@ -282,55 +246,25 @@ class GrossBasedPriceTest extends TestCase
 	{
 		$this->expectException( InvalidPriceException::class );
 
-		$price = GrossBasedPrice::fromGrossAmount( new Money( 100, new Currency( 'EUR' ) ), new VatRate( 19 ) );
-		$price->subtract( GrossBasedPrice::fromGrossAmount( new Money( 100, new Currency( 'EUR' ) ), new VatRate( 7 ) ) );
+		$price = GrossBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 19 ) );
+		$price->subtract( GrossBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 7 ) ) );
 	}
 
-	public function AllocateToTargetsDataProvider(): array
+	public function testAllocatingPriceToTargets(): void
 	{
-		return [
-			[
-				GrossBasedPrice::fromGrossAmount( new Money( 99, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				10,
-				[
-					GrossBasedPrice::fromGrossAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					GrossBasedPrice::fromGrossAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					GrossBasedPrice::fromGrossAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					GrossBasedPrice::fromGrossAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					GrossBasedPrice::fromGrossAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					GrossBasedPrice::fromGrossAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					GrossBasedPrice::fromGrossAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					GrossBasedPrice::fromGrossAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					GrossBasedPrice::fromGrossAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					GrossBasedPrice::fromGrossAmount( new Money( 9, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				],
-			],
-		];
-	}
+		$money = $this->buildMoney( 99, 'EUR' );
+		$money->expects( self::once() )
+		      ->method( 'allocateToTargets' );
 
-	/**
-	 * @dataProvider AllocateToTargetsDataProvider
-	 *
-	 * @param RepresentsPrice $price
-	 * @param int             $targetCount
-	 * @param array           $expectedResult
-	 */
-	public function testAllocatingPriceToTargets( RepresentsPrice $price, int $targetCount, array $expectedResult ): void
-	{
-		self::assertEquals( $expectedResult, iterator_to_array( $price->allocateToTargets( $targetCount ) ) );
+		iterator_to_array( GrossBasedPrice::fromGrossAmount( $money, new VatRate( 19 ) )->allocateToTargets( 10 ) );
 	}
 
 	public function testAllocatingPriceByRatios(): void
 	{
-		$price          = GrossBasedPrice::fromGrossAmount( new Money( 5, new Currency( 'EUR' ) ), new VatRate( 19 ) );
-		$allocatedPrice = iterator_to_array( $price->allocateByRatios( [ 3, 7 ] ) );
+		$money = $this->buildMoney( 5, 'EUR' );
+		$money->expects( self::once() )
+		      ->method( 'allocateByRatios' );
 
-		self::assertEquals(
-			[
-				GrossBasedPrice::fromGrossAmount( new Money( 2, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				GrossBasedPrice::fromGrossAmount( new Money( 3, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-			],
-			$allocatedPrice
-		);
+		iterator_to_array( GrossBasedPrice::fromGrossAmount( $money, new VatRate( 19 ) )->allocateByRatios( [ 3, 7 ] ) );
 	}
 }

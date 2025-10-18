@@ -5,21 +5,21 @@ namespace ComponoKit\Prices\Tests\Unit;
 use ComponoKit\Prices\GrossBasedPrice;
 use ComponoKit\Prices\Interfaces\RepresentsPrice;
 use ComponoKit\Prices\NetBasedPrice;
+use ComponoKit\Prices\Tests\Unit\fakes\BuildingFakeMoneys;
 use ComponoKit\Prices\Tests\Unit\fakes\FakePriceImplementation;
-use ComponoKit\Prices\Tests\Unit\fakes\FakeTotalPrice;
 use ComponoKit\Prices\TotalPrice;
 use ComponoKit\Prices\VatRate;
-use Money\Currency;
-use Money\Money;
 use PHPUnit\Framework\TestCase;
 
 class TotalPriceTest extends TestCase
 {
+	use BuildingFakeMoneys;
+
 	public function testInstantiatingWithPrices(): void
 	{
 		$prices = $this->createListOfPrices();
 
-		$totalPrice = new TotalPrice( new Currency( 'EUR' ), $prices );
+		$totalPrice = new TotalPrice( $this->buildMoneyFactory( 'EUR' ), $prices );
 
 		self::assertEquals( $prices, $totalPrice->getPrices() );
 	}
@@ -27,8 +27,8 @@ class TotalPriceTest extends TestCase
 	public function testInstantiatingFromAnotherTotalPrice(): void
 	{
 		self::assertEquals(
-			new TotalPrice( new Currency( 'EUR' ), $this->createListOfPrices() ),
-			TotalPrice::fromTotalPrice( new FakeTotalPrice( new Currency( 'EUR' ), $this->createListOfPrices() ) )
+			new TotalPrice( $this->buildMoneyFactory( 'EUR' ), $this->createListOfPrices() ),
+			TotalPrice::fromTotalPrice( new TotalPrice( $this->buildMoneyFactory( 'EUR' ), $this->createListOfPrices() ) )
 		);
 	}
 
@@ -36,7 +36,7 @@ class TotalPriceTest extends TestCase
 	{
 		$prices = $this->createListOfPrices();
 
-		$totalPrice = new TotalPrice( new Currency( 'EUR' ), [ $prices[0], $prices[1] ] );
+		$totalPrice = new TotalPrice( $this->buildMoneyFactory( 'EUR' ), [ $prices[0], $prices[1] ] );
 
 		for ( $i = 2, $iMax = count( $prices ); $i < $iMax; $i++ )
 		{
@@ -51,7 +51,7 @@ class TotalPriceTest extends TestCase
 		$prices        = $this->createListOfPrices();
 		$initialPrices = [ $prices[0], $prices[1] ];
 
-		$totalPrice = new TotalPrice( new Currency( 'EUR' ), $initialPrices );
+		$totalPrice = new TotalPrice( $this->buildMoneyFactory( 'EUR' ), $initialPrices );
 
 		for ( $i = 2, $iMax = count( $prices ); $i < $iMax; $i++ )
 		{
@@ -66,8 +66,8 @@ class TotalPriceTest extends TestCase
 		$prices                    = $this->createListOfPrices();
 		$pricesOfAnotherTotalPrice = [ $prices[0], $prices[1] ];
 
-		$totalPrice        = new TotalPrice( new Currency( 'EUR' ), $prices );
-		$anotherTotalPrice = new TotalPrice( new Currency( 'EUR' ), $pricesOfAnotherTotalPrice );
+		$totalPrice        = new TotalPrice( $this->buildMoneyFactory( 'EUR' ), $prices );
+		$anotherTotalPrice = new TotalPrice( $this->buildMoneyFactory( 'EUR' ), $pricesOfAnotherTotalPrice );
 
 		$mergedTotalPrices = $totalPrice->addTotalPrice( $anotherTotalPrice );
 
@@ -79,7 +79,7 @@ class TotalPriceTest extends TestCase
 	{
 		self::assertEquals(
 			[ new VatRate( 19 ), new VatRate( 7 ), new VatRate( 16.5 ) ],
-			(new TotalPrice( new Currency( 'EUR' ), $this->createListOfPrices() ))->getVatRates()
+			(new TotalPrice( $this->buildMoneyFactory( 'EUR' ), $this->createListOfPrices() ))->getVatRates()
 		);
 	}
 
@@ -88,28 +88,28 @@ class TotalPriceTest extends TestCase
 		self::assertEquals(
 			[
 				1900 => [
-					GrossBasedPrice::fromGrossAmount( new Money( 100, new Currency('EUR') ), new VatRate( 19 ) ),
-					NetBasedPrice::fromGrossAmount( new Money( 200, new Currency('EUR') ), new VatRate( 19 ) ),
-					FakePriceImplementation::fromGrossAmount( new Money( 300, new Currency('EUR') ), new VatRate( 19 ) ),
+					GrossBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 19 ) ),
+					NetBasedPrice::fromGrossAmount( $this->buildMoney( 200, 'EUR' ), new VatRate( 19 ) ),
+					FakePriceImplementation::fromGrossAmount( $this->buildMoney( 300, 'EUR' ), new VatRate( 19 ) ),
 				],
 				700  => [
-					GrossBasedPrice::fromGrossAmount( new Money( 100, new Currency('EUR') ), new VatRate( 7 ) ),
-					NetBasedPrice::fromGrossAmount( new Money( 200, new Currency('EUR') ), new VatRate( 7 ) ),
-					FakePriceImplementation::fromGrossAmount( new Money( 300, new Currency('EUR') ), new VatRate( 7 ) ),
+					GrossBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 7 ) ),
+					NetBasedPrice::fromGrossAmount( $this->buildMoney( 200, 'EUR' ), new VatRate( 7 ) ),
+					FakePriceImplementation::fromGrossAmount( $this->buildMoney( 300, 'EUR' ), new VatRate( 7 ) ),
 				],
 				1650 => [
-					GrossBasedPrice::fromGrossAmount( new Money( 100, new Currency('EUR') ), new VatRate( 16.5 ) ),
-					NetBasedPrice::fromGrossAmount( new Money( 200, new Currency('EUR') ), new VatRate( 16.5 ) ),
-					FakePriceImplementation::fromGrossAmount( new Money( 300, new Currency('EUR') ), new VatRate( 16.5 ) ),
+					GrossBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 16.5 ) ),
+					NetBasedPrice::fromGrossAmount( $this->buildMoney( 200, 'EUR' ), new VatRate( 16.5 ) ),
+					FakePriceImplementation::fromGrossAmount( $this->buildMoney( 300, 'EUR' ), new VatRate( 16.5 ) ),
 				],
 			],
-			(new TotalPrice( new Currency( 'EUR' ), $this->createListOfPrices() ))->getPricesGroupedByVatRates()
+			(new TotalPrice( $this->buildMoneyFactory( 'EUR' ), $this->createListOfPrices() ))->getPricesGroupedByVatRates()
 		);
 	}
 
 	public function testTotalPriceReturnsCorrectAmounts(): void
 	{
-		$totalPrice = new TotalPrice( new Currency( 'EUR' ), $this->createListOfPrices() );
+		$totalPrice = new TotalPrice( $this->buildMoneyFactory( 'EUR' ), $this->createListOfPrices() );
 
 		self::assertEquals( 1800, $totalPrice->getTotalGrossAmount()->getAmount() );
 		self::assertEquals( 1580, $totalPrice->getTotalNetAmount()->getAmount() );
@@ -119,13 +119,13 @@ class TotalPriceTest extends TestCase
 	public function testJsonSerialize(): void
 	{
 		$prices = [
-			GrossBasedPrice::fromGrossAmount( new Money( 100, new Currency('EUR') ), new VatRate( 19 ) ),
-			FakePriceImplementation::fromGrossAmount( new Money( 300, new Currency('EUR') ), new VatRate( 19 ) ),
-			NetBasedPrice::fromGrossAmount( new Money( 200, new Currency('EUR') ), new VatRate( 7 ) ),
+			GrossBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 19 ) ),
+			FakePriceImplementation::fromGrossAmount( $this->buildMoney( 300, 'EUR' ), new VatRate( 19 ) ),
+			NetBasedPrice::fromGrossAmount( $this->buildMoney( 200, 'EUR' ), new VatRate( 7 ) ),
 		];
 		self::assertEquals(
-			'{"1900":[{"gross":{"amount":"100","currency":"EUR"},"net":{"amount":"84","currency":"EUR"},"vat":{"amount":"16","currency":"EUR"}},{"gross":{"amount":"300","currency":"EUR"},"net":{"amount":"252","currency":"EUR"},"vat":{"amount":"48","currency":"EUR"}}],"700":[{"gross":{"amount":"200","currency":"EUR"},"net":{"amount":"187","currency":"EUR"},"vat":{"amount":"13","currency":"EUR"}}]}',
-			json_encode( new TotalPrice( new Currency( 'EUR' ), $prices ), JSON_THROW_ON_ERROR )
+			'{"currency-code":"EUR","prices":{"1900":[{"gross":100,"net":84,"vat":16},{"gross":300,"net":252,"vat":48}],"700":[{"gross":200,"net":187,"vat":13}]}}',
+			json_encode( new TotalPrice( $this->buildMoneyFactory( 'EUR' ), $prices ), JSON_THROW_ON_ERROR )
 		);
 	}
 
@@ -135,15 +135,15 @@ class TotalPriceTest extends TestCase
 	private function createListOfPrices(): array
 	{
 		return [
-			GrossBasedPrice::fromGrossAmount( new Money( 100, new Currency('EUR') ), new VatRate( 19 ) ),
-			NetBasedPrice::fromGrossAmount( new Money( 200, new Currency('EUR') ), new VatRate( 19 ) ),
-			FakePriceImplementation::fromGrossAmount( new Money( 300, new Currency('EUR') ), new VatRate( 19 ) ),
-			GrossBasedPrice::fromGrossAmount( new Money( 100, new Currency('EUR') ), new VatRate( 7 ) ),
-			NetBasedPrice::fromGrossAmount( new Money( 200, new Currency('EUR') ), new VatRate( 7 ) ),
-			FakePriceImplementation::fromGrossAmount( new Money( 300, new Currency('EUR') ), new VatRate( 7 ) ),
-			GrossBasedPrice::fromGrossAmount( new Money( 100, new Currency('EUR') ), new VatRate( 16.5 ) ),
-			NetBasedPrice::fromGrossAmount( new Money( 200, new Currency('EUR') ), new VatRate( 16.5 ) ),
-			FakePriceImplementation::fromGrossAmount( new Money( 300, new Currency('EUR') ), new VatRate( 16.5 ) ),
+			GrossBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 19 ) ),
+			NetBasedPrice::fromGrossAmount( $this->buildMoney( 200, 'EUR' ), new VatRate( 19 ) ),
+			FakePriceImplementation::fromGrossAmount( $this->buildMoney( 300, 'EUR' ), new VatRate( 19 ) ),
+			GrossBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 7 ) ),
+			NetBasedPrice::fromGrossAmount( $this->buildMoney( 200, 'EUR' ), new VatRate( 7 ) ),
+			FakePriceImplementation::fromGrossAmount( $this->buildMoney( 300, 'EUR' ), new VatRate( 7 ) ),
+			GrossBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 16.5 ) ),
+			NetBasedPrice::fromGrossAmount( $this->buildMoney( 200, 'EUR' ), new VatRate( 16.5 ) ),
+			FakePriceImplementation::fromGrossAmount( $this->buildMoney( 300, 'EUR' ), new VatRate( 16.5 ) ),
 		];
 	}
 }

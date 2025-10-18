@@ -5,14 +5,15 @@ namespace ComponoKit\Prices\Tests\Unit;
 use ComponoKit\Prices\GrossBasedPrice;
 use ComponoKit\Prices\Interfaces\RepresentsPrice;
 use ComponoKit\Prices\Tests\Unit\fakes\AnotherFakePriceImplementation;
+use ComponoKit\Prices\Tests\Unit\fakes\BuildingFakeMoneys;
 use ComponoKit\Prices\Tests\Unit\fakes\FakePriceImplementation;
 use ComponoKit\Prices\VatRate;
-use Money\Currency;
-use Money\Money;
 use PHPUnit\Framework\TestCase;
 
 class AbstractPriceTest extends TestCase
 {
+	use BuildingFakeMoneys;
+
 	public function FromGrossAmountProvider(): array
 	{
 		return [
@@ -27,23 +28,17 @@ class AbstractPriceTest extends TestCase
 
 	/**
 	 * @dataProvider FromGrossAmountProvider
-	 *
-	 * @param int    $grossAmount
-	 * @param int    $vatRate
-	 * @param string $currency
-	 * @param int    $expectedNetAmount
-	 * @param int    $expectedVatAmount
 	 */
-	public function testCalculatingNetAndVatAmountWhenInstantiatingFromGrossAmount( int $grossAmount, int $vatRate, string $currency, int $expectedNetAmount, int $expectedVatAmount ): void
+	public function testCalculatingNetAndVatAmountWhenInstantiatingFromGrossAmount( int $grossAmount, int $vatRate, string $currencyCode, int $expectedNetAmount, int $expectedVatAmount ): void
 	{
-		$price = FakePriceImplementation::fromGrossAmount( new Money( $grossAmount, new Currency( $currency ) ), new VatRate( $vatRate ) );
+		$price = FakePriceImplementation::fromGrossAmount( $this->buildMoney( $grossAmount, $currencyCode ), new VatRate( $vatRate ) );
 
 		self::assertInstanceOf( FakePriceImplementation::class, $price );
-		self::assertEquals( new Money( $grossAmount, new Currency( $currency ) ), $price->getGrossAmount() );
-		self::assertEquals( new Money( $expectedNetAmount, new Currency( $currency ) ), $price->getNetAmount() );
-		self::assertEquals( new Money( $expectedVatAmount, new Currency( $currency ) ), $price->getVatAmount() );
+		self::assertEquals( $grossAmount, $price->getGrossAmount()->getAmount() );
+		self::assertEquals( $expectedNetAmount, $price->getNetAmount()->getAmount() );
+		self::assertEquals( $expectedVatAmount, $price->getVatAmount()->getAmount() );
 		self::assertEquals( new VatRate( $vatRate ), $price->getVatRate() );
-		self::assertEquals( $currency, $price->getCurrency()->getCode() );
+		self::assertEquals( $currencyCode, $price->getCurrency()->getIsoCode() );
 	}
 
 	public function FromNetAmountProvider(): array
@@ -60,21 +55,15 @@ class AbstractPriceTest extends TestCase
 
 	/**
 	 * @dataProvider FromNetAmountProvider
-	 *
-	 * @param int    $netAmount
-	 * @param int    $vatRate
-	 * @param string $currency
-	 * @param int    $expectedGrossAmount
-	 * @param int    $expectedVatAmount
 	 */
-	public function testCalculatingNetAndVatAmountWhenInstantiatingFromNetAmount( int $netAmount, int $vatRate, string $currency, int $expectedGrossAmount, int $expectedVatAmount ): void
+	public function testCalculatingNetAndVatAmountWhenInstantiatingFromNetAmount( int $netAmount, int $vatRate, string $currencyCode, int $expectedGrossAmount, int $expectedVatAmount ): void
 	{
-		$price = FakePriceImplementation::fromNetAmount( new Money( $netAmount, new Currency( $currency ) ), new VatRate( $vatRate ) );
+		$price = FakePriceImplementation::fromNetAmount( $this->buildMoney( $netAmount, $currencyCode ), new VatRate( $vatRate ) );
 
 		self::assertInstanceOf( FakePriceImplementation::class, $price );
-		self::assertEquals( new Money( $expectedGrossAmount, new Currency( $currency ) ), $price->getGrossAmount() );
-		self::assertEquals( new Money( $netAmount, new Currency( $currency ) ), $price->getNetAmount() );
-		self::assertEquals( new Money( $expectedVatAmount, new Currency( $currency ) ), $price->getVatAmount() );
+		self::assertEquals( $this->buildMoney( $expectedGrossAmount, $currencyCode ), $price->getGrossAmount() );
+		self::assertEquals( $this->buildMoney( $netAmount, $currencyCode ), $price->getNetAmount() );
+		self::assertEquals( $this->buildMoney( $expectedVatAmount, $currencyCode ), $price->getVatAmount() );
 		self::assertEquals( new VatRate( $vatRate ), $price->getVatRate() );
 	}
 
@@ -90,17 +79,15 @@ class AbstractPriceTest extends TestCase
 	public function FromPriceProvider(): array
 	{
 		return [
-			[ AnotherFakePriceImplementation::fromGrossAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ) ],
-			[ AnotherFakePriceImplementation::fromGrossAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ) ],
-			[ AnotherFakePriceImplementation::fromGrossAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ) ],
-			[ AnotherFakePriceImplementation::fromGrossAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ) ],
+			[ AnotherFakePriceImplementation::fromGrossAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ) ],
+			[ AnotherFakePriceImplementation::fromGrossAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ) ],
+			[ AnotherFakePriceImplementation::fromGrossAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ) ],
+			[ AnotherFakePriceImplementation::fromGrossAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ) ],
 		];
 	}
 
 	/**
 	 * @dataProvider FromPriceProvider
-	 *
-	 * @param RepresentsPrice $price
 	 */
 	public function testInstantiatingFromAnotherPrice( RepresentsPrice $price ): void
 	{
@@ -116,8 +103,8 @@ class AbstractPriceTest extends TestCase
 	public function testJsonSerialize(): void
 	{
 		self::assertEquals(
-			'{"currency":"EUR","netAmount":"100","grossAmount":"119","vatAmount":"19","vatRate":19}',
-			json_encode( GrossBasedPrice::fromNetAmount( new Money( 100, new Currency( 'EUR' ) ), new VatRate( 19 ) ), JSON_THROW_ON_ERROR )
+			'{"currency-code":"EUR","netAmount":100,"grossAmount":119,"vatAmount":19,"vatRate":1900}',
+			json_encode( GrossBasedPrice::fromNetAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 19 ) ), JSON_THROW_ON_ERROR )
 		);
 	}
 }

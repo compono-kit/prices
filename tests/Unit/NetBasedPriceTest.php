@@ -5,14 +5,15 @@ namespace ComponoKit\Prices\Tests\Unit;
 use ComponoKit\Prices\Exceptions\InvalidPriceException;
 use ComponoKit\Prices\Interfaces\RepresentsPrice;
 use ComponoKit\Prices\NetBasedPrice;
+use ComponoKit\Prices\Tests\Unit\fakes\BuildingFakeMoneys;
 use ComponoKit\Prices\Tests\Unit\fakes\FakePriceImplementation;
 use ComponoKit\Prices\VatRate;
-use Money\Currency;
-use Money\Money;
 use PHPUnit\Framework\TestCase;
 
 class NetBasedPriceTest extends TestCase
 {
+	use BuildingFakeMoneys;
+
 	public function LineItemLevelFromGrossMultiplyDataProvider(): array
 	{
 		return [
@@ -33,19 +34,12 @@ class NetBasedPriceTest extends TestCase
 
 	/**
 	 * @dataProvider LineItemLevelFromGrossMultiplyDataProvider
-	 *
-	 * @param int   $unitGrossAmount
-	 * @param float $vatRate
-	 * @param float $quantity
-	 * @param int   $expectedTotalNetAmount
-	 * @param int   $expectedTotalGrossAmount
-	 * @param int   $expectedUnitNetAmount
 	 */
 	public function testCalculatingTaxBeforeMultiplyingByQuantityFromGross(
 		int $unitGrossAmount, float $vatRate, float $quantity, int $expectedTotalNetAmount, int $expectedTotalGrossAmount, int $expectedUnitNetAmount
 	): void
 	{
-		$unitPrice  = NetBasedPrice::fromGrossAmount( new Money( $unitGrossAmount, new Currency( 'EUR' ) ), new VatRate( $vatRate ) );
+		$unitPrice  = NetBasedPrice::fromGrossAmount( $this->buildMoney( $unitGrossAmount, 'EUR' ), new VatRate( $vatRate ) );
 		$totalPrice = $unitPrice->multiply( $quantity );
 
 		self::assertEquals( $expectedTotalNetAmount, $totalPrice->getNetAmount()->getAmount() );
@@ -74,19 +68,12 @@ class NetBasedPriceTest extends TestCase
 
 	/**
 	 * @dataProvider LineItemLevelFromNetMultiplyDataProvider
-	 *
-	 * @param int   $unitNetAmount
-	 * @param float $vatRate
-	 * @param float $quantity
-	 * @param int   $expectedTotalNetAmount
-	 * @param int   $expectedTotalGrossAmount
-	 * @param int   $expectedUnitGrossAmount
 	 */
 	public function testCalculatingTaxBeforeMultiplyingByQuantityFromNet(
 		int $unitNetAmount, float $vatRate, float $quantity, int $expectedTotalNetAmount, int $expectedTotalGrossAmount, int $expectedUnitGrossAmount
 	): void
 	{
-		$unitPrice  = NetBasedPrice::fromNetAmount( new Money( $unitNetAmount, new Currency( 'EUR' ) ), new VatRate( $vatRate ) );
+		$unitPrice  = NetBasedPrice::fromNetAmount( $this->buildMoney( $unitNetAmount, 'EUR' ), new VatRate( $vatRate ) );
 		$totalPrice = $unitPrice->multiply( $quantity );
 
 		self::assertEquals( $expectedTotalNetAmount, $totalPrice->getNetAmount()->getAmount() );
@@ -115,19 +102,12 @@ class NetBasedPriceTest extends TestCase
 
 	/**
 	 * @dataProvider LineItemLevelFromGrossDivideDataProvider
-	 *
-	 * @param int   $totalGrossAmount
-	 * @param float $vatRate
-	 * @param float $quantity
-	 * @param int   $expectedUnitNetAmount
-	 * @param int   $expectedUnitGrossAmount
-	 * @param int   $expectedTotalNetAmount
 	 */
 	public function testCalculatingTaxBeforeDividingByQuantityFromGross(
 		int $totalGrossAmount, float $vatRate, float $quantity, int $expectedUnitNetAmount, int $expectedUnitGrossAmount, int $expectedTotalNetAmount
 	): void
 	{
-		$totalPrice = NetBasedPrice::fromGrossAmount( new Money( $totalGrossAmount, new Currency( 'EUR' ) ), new VatRate( $vatRate ) );
+		$totalPrice = NetBasedPrice::fromGrossAmount( $this->buildMoney( $totalGrossAmount, 'EUR' ), new VatRate( $vatRate ) );
 		$unitPrice  = $totalPrice->divide( $quantity );
 
 		self::assertEquals( $expectedUnitNetAmount, $unitPrice->getNetAmount()->getAmount() );
@@ -156,19 +136,12 @@ class NetBasedPriceTest extends TestCase
 
 	/**
 	 * @dataProvider LineItemLevelFromNetDivideDataProvider
-	 *
-	 * @param int   $totalNetAmount
-	 * @param float $vatRate
-	 * @param float $quantity
-	 * @param int   $expectedUnitNetAmount
-	 * @param int   $expectedUnitGrossAmount
-	 * @param int   $expectedTotalGrossAmount
 	 */
 	public function testCalculatingTaxBeforeDividingByQuantityFromNet(
 		int $totalNetAmount, float $vatRate, float $quantity, int $expectedUnitNetAmount, int $expectedUnitGrossAmount, int $expectedTotalGrossAmount
 	): void
 	{
-		$totalPrice = NetBasedPrice::fromNetAmount( new Money( $totalNetAmount, new Currency( 'EUR' ) ), new VatRate( $vatRate ) );
+		$totalPrice = NetBasedPrice::fromNetAmount( $this->buildMoney( $totalNetAmount, 'EUR' ), new VatRate( $vatRate ) );
 		$unitPrice  = $totalPrice->divide( $quantity );
 
 		self::assertEquals( $expectedUnitNetAmount, $unitPrice->getNetAmount()->getAmount() );
@@ -181,39 +154,35 @@ class NetBasedPriceTest extends TestCase
 	{
 		return [
 			[
-				NetBasedPrice::fromNetAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( new Money( 1000, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( new Money( 4990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				FakePriceImplementation::fromNetAmount( $this->buildMoney( 1000, 'EUR' ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( 4990, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				NetBasedPrice::fromNetAmount( new Money( -3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( new Money( 1000, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( new Money( -2990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( -3990, 'EUR' ), new VatRate( 19 ) ),
+				FakePriceImplementation::fromNetAmount( $this->buildMoney( 1000, 'EUR' ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( -2990, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				NetBasedPrice::fromNetAmount( new Money( -3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( new Money( 5090, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( new Money( 1100, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( -3990, 'EUR' ), new VatRate( 19 ) ),
+				FakePriceImplementation::fromNetAmount( $this->buildMoney( 5090, 'EUR' ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( 1100, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				NetBasedPrice::fromNetAmount( new Money( -3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( new Money( 0, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( -3990, 'EUR' ), new VatRate( 19 ) ),
+				FakePriceImplementation::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				NetBasedPrice::fromNetAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( new Money( 0, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				FakePriceImplementation::fromNetAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
 			],
 		];
 	}
 
 	/**
 	 * @dataProvider AddingPriceDataProvider
-	 *
-	 * @param NetBasedPrice   $originalPrice
-	 * @param RepresentsPrice $additionalPrice
-	 * @param NetBasedPrice   $expectedPrice
 	 */
 	public function testAddingPrice( NetBasedPrice $originalPrice, RepresentsPrice $additionalPrice, NetBasedPrice $expectedPrice ): void
 	{
@@ -226,52 +195,48 @@ class NetBasedPriceTest extends TestCase
 	{
 		$this->expectException( InvalidPriceException::class );
 
-		$price = NetBasedPrice::fromGrossAmount( new Money( 100, new Currency( 'EUR' ) ), new VatRate( 19 ) );
-		$price->add( NetBasedPrice::fromGrossAmount( new Money( 100, new Currency( 'EUR' ) ), new VatRate( 7 ) ) );
+		$price = NetBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 19 ) );
+		$price->add( NetBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 7 ) ) );
 	}
 
 	public function SubtractingPriceDataProvider(): array
 	{
 		return [
 			[
-				NetBasedPrice::fromNetAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( new Money( 1000, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( new Money( 2990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				FakePriceImplementation::fromNetAmount( $this->buildMoney( 1000, 'EUR' ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( 2990, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				NetBasedPrice::fromNetAmount( new Money( -3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( new Money( 1000, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( new Money( -4990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( -3990, 'EUR' ), new VatRate( 19 ) ),
+				FakePriceImplementation::fromNetAmount( $this->buildMoney( 1000, 'EUR' ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( -4990, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				NetBasedPrice::fromNetAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( new Money( 5000, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( new Money( -1010, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				FakePriceImplementation::fromNetAmount( $this->buildMoney( 5000, 'EUR' ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( -1010, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				NetBasedPrice::fromNetAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( new Money( 0, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				FakePriceImplementation::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				NetBasedPrice::fromNetAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( new Money( 0, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( new Money( 3990, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
+				FakePriceImplementation::fromNetAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
 			],
 			[
-				NetBasedPrice::fromNetAmount( new Money( -1000, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( new Money( -1000, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( new Money( 0, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( -1000, 'EUR' ), new VatRate( 19 ) ),
+				FakePriceImplementation::fromNetAmount( $this->buildMoney( -1000, 'EUR' ), new VatRate( 19 ) ),
+				NetBasedPrice::fromNetAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
 			],
 		];
 	}
 
 	/**
 	 * @dataProvider SubtractingPriceDataProvider
-	 *
-	 * @param NetBasedPrice   $originalPrice
-	 * @param RepresentsPrice $priceToSubtract
-	 * @param NetBasedPrice   $expectedPrice
 	 */
 	public function testSubtractingPrice( NetBasedPrice $originalPrice, RepresentsPrice $priceToSubtract, NetBasedPrice $expectedPrice ): void
 	{
@@ -284,55 +249,25 @@ class NetBasedPriceTest extends TestCase
 	{
 		$this->expectException( InvalidPriceException::class );
 
-		$price = NetBasedPrice::fromGrossAmount( new Money( 100, new Currency( 'EUR' ) ), new VatRate( 19 ) );
-		$price->subtract( NetBasedPrice::fromGrossAmount( new Money( 100, new Currency( 'EUR' ) ), new VatRate( 7 ) ) );
+		$price = NetBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 19 ) );
+		$price->subtract( NetBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 7 ) ) );
 	}
 
-	public function AllocateToTargetsDataProvider(): array
+	public function testAllocatingPriceToTargets(): void
 	{
-		return [
-			[
-				NetBasedPrice::fromNetAmount( new Money( 99, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				10,
-				[
-					NetBasedPrice::fromNetAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					NetBasedPrice::fromNetAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					NetBasedPrice::fromNetAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					NetBasedPrice::fromNetAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					NetBasedPrice::fromNetAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					NetBasedPrice::fromNetAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					NetBasedPrice::fromNetAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					NetBasedPrice::fromNetAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					NetBasedPrice::fromNetAmount( new Money( 10, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-					NetBasedPrice::fromNetAmount( new Money( 9, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				],
-			],
-		];
-	}
+		$money = $this->buildMoney( 99, 'EUR' );
+		$money->expects( self::once() )
+		      ->method( 'allocateToTargets' );
 
-	/**
-	 * @dataProvider AllocateToTargetsDataProvider
-	 *
-	 * @param RepresentsPrice $price
-	 * @param int             $targetCount
-	 * @param array           $expectedResult
-	 */
-	public function testAllocatingPriceToTargets( RepresentsPrice $price, int $targetCount, array $expectedResult ): void
-	{
-		self::assertEquals( $expectedResult, iterator_to_array( $price->allocateToTargets( $targetCount ) ) );
+		iterator_to_array( NetBasedPrice::fromNetAmount( $money, new VatRate( 19 ) )->allocateToTargets( 10 ) );
 	}
 
 	public function testAllocatingPriceByRatios(): void
 	{
-		$price          = NetBasedPrice::fromNetAmount( new Money( 5, new Currency( 'EUR' ) ), new VatRate( 19 ) );
-		$allocatedPrice = iterator_to_array( $price->allocateByRatios( [ 3, 7 ] ) );
+		$money = $this->buildMoney( 5, 'EUR' );
+		$money->expects( self::once() )
+		      ->method( 'allocateByRatios' );
 
-		self::assertEquals(
-			[
-				NetBasedPrice::fromNetAmount( new Money( 2, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( new Money( 3, new Currency( 'EUR' ) ), new VatRate( 19 ) ),
-			],
-			$allocatedPrice
-		);
+		iterator_to_array( NetBasedPrice::fromNetAmount( $money, new VatRate( 19 ) )->allocateByRatios( [ 3, 7 ] ) );
 	}
 }

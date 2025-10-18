@@ -5,8 +5,9 @@ calculated by the class depending on the instantiation method.
 
 ## Requirements
 
-* PHP >=7.4
-* moneyphp/money
+* PHP >= 8.0
+* compono-kit/money-interfaces
+* compono-kit/price-interfaces
 
 ## Instantiation
 
@@ -208,49 +209,30 @@ $prices = [
 ];
 $totalPrice = new TotalPrice( 'EUR', $prices );
 json_encode( $totalPrice, JSON_PRETTY_PRINT ); 
-/**
+````
+````JSON
 {
-	"1900": [{
-		"gross": {
-			"amount": "100",
-			"currency": "EUR"
-		},
-		"net": {
-			"amount": "84",
-			"currency": "EUR"
-		},
-		"vat": {
-			"amount": "16",
-			"currency": "EUR"
-		}
-	}, {
-		"gross": {
-			"amount": "300",
-			"currency": "EUR"
-		},
-		"net": {
-			"amount": "252",
-			"currency": "EUR"
-		},
-		"vat": {
-			"amount": "48",
-			"currency": "EUR"
-		}
-	}],
-	"700": [{
-		"gross": {
-			"amount": "200",
-			"currency": "EUR"
-		},
-		"net": {
-			"amount": "187",
-			"currency": "EUR"
-		},
-		"vat": {
-			"amount": "13",
-			"currency": "EUR"
-		}
-	}]
+    "currency-code": "EUR",
+    "prices": {
+        "1900": [
+            {
+                "gross": 100,
+                "net": 84,
+                "vat": 16
+            }, 
+            {
+                "gross": 300,
+                "net": 252,
+                "vat": 48
+            }
+        ],
+        "700": [
+            {
+                "gross": 200,
+                "net": 187,
+                "vat": 13
+            }
+        ]
+    }
 }
-**/
 ````

@@ -2,8 +2,6 @@
 
 namespace ComponoKit\Prices\Tests\Unit\fakes;
 
-use ComponoKit\Money\Currency;
-use ComponoKit\Money\Money;
 use ComponoKit\Prices\AbstractPrice;
 use ComponoKit\Prices\GrossBasedPrice;
 use ComponoKit\Prices\Interfaces\RepresentsPrice;
@@ -11,14 +9,28 @@ use ComponoKit\Prices\VatRate;
 
 class AnotherFakePriceImplementation extends AbstractPrice
 {
+	use BuildingFakeMoneys;
+
 	public function multiply( float $quantity ): RepresentsPrice
 	{
-		return GrossBasedPrice::fromGrossAmount( new Money( 0, new Currency( 'EUR' ) ), new VatRate( 0 ) );
+		return GrossBasedPrice::fromGrossAmount(
+			$this->buildMoney(
+				(int)($this->grossAmount->getAmount() * $quantity),
+				$this->getCurrency()->getIsoCode()
+			),
+			new VatRate( 0 )
+		);
 	}
 
 	public function divide( float $quantity ): RepresentsPrice
 	{
-		return GrossBasedPrice::fromGrossAmount( new Money( 0, new Currency( 'EUR' ) ), new VatRate( 0 ) );
+		return GrossBasedPrice::fromGrossAmount(
+			$this->buildMoney(
+				(int)round( $this->grossAmount->getAmount() / $quantity, 0, PHP_ROUND_HALF_UP ),
+				$this->getCurrency()->getIsoCode()
+			),
+			new VatRate( 0 )
+		);
 	}
 
 	public function add( RepresentsPrice $price ): RepresentsPrice
@@ -31,7 +43,7 @@ class AnotherFakePriceImplementation extends AbstractPrice
 		return $price;
 	}
 
-	public function allocateToTargets( int $targetCount ): \Iterator|array
+	public function allocateToTargets( int $numberOfTargets ): \Iterator
 	{
 		yield;
 	}

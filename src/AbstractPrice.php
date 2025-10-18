@@ -74,11 +74,11 @@ abstract class AbstractPrice implements RepresentsPrice, \JsonSerializable
 	public function jsonSerialize(): array
 	{
 		return [
-			'currency'    => $this->getGrossAmount()->getCurrency()->getIsoCode(),
+			'currency-code'    => $this->getGrossAmount()->getCurrency()->getIsoCode(),
 			'netAmount'   => $this->getNetAmount()->getAmount(),
 			'grossAmount' => $this->getGrossAmount()->getAmount(),
 			'vatAmount'   => $this->getVatAmount()->getAmount(),
-			'vatRate'     => $this->getVatRate()->toFloat(),
+			'vatRate'     => $this->getVatRate()->toInt(),
 		];
 	}
 

@@ -20,10 +20,6 @@ class VatRateTest extends TestCase
 
 	/**
 	 * @dataProvider FloatValueProvider
-	 *
-	 * @param float  $vatRateValue
-	 * @param int    $expectedInt
-	 * @param string $expectedString
 	 */
 	public function testInstantiatingVatRate( float $vatRateValue, int $expectedInt, string $expectedString ): void
 	{
@@ -54,10 +50,6 @@ class VatRateTest extends TestCase
 
 	/**
 	 * @dataProvider IntegerValueProvider
-	 *
-	 * @param int    $vatRateValue
-	 * @param float  $expectedFloat
-	 * @param string $expectedString
 	 */
 	public function testInstantiatingFromInt( int $vatRateValue, float $expectedFloat, string $expectedString ): void
 	{
