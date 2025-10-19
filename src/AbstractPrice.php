@@ -10,17 +10,8 @@ use ComponoKit\Prices\Interfaces\RepresentsVatRate;
 
 abstract class AbstractPrice implements RepresentsPrice, \JsonSerializable
 {
-	protected RepresentsMoney   $netAmount;
-
-	protected RepresentsMoney   $grossAmount;
-
-	protected RepresentsVatRate $vatRate;
-
-	final protected function __construct( RepresentsMoney $netAmount, RepresentsMoney $grossAmount, RepresentsVatRate $vatRate )
+	final protected function __construct( protected readonly RepresentsMoney $netAmount, protected readonly RepresentsMoney $grossAmount, protected readonly RepresentsVatRate $vatRate )
 	{
-		$this->netAmount   = $netAmount;
-		$this->grossAmount = $grossAmount;
-		$this->vatRate     = $vatRate;
 	}
 
 	public static function fromNetAmount( RepresentsMoney $netAmount, RepresentsVatRate $vatRate ): static

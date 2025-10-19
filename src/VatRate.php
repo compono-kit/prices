@@ -7,13 +7,9 @@ use ComponoKit\Prices\Interfaces\RepresentsVatRate;
 
 class VatRate implements RepresentsVatRate
 {
-	private float $value;
-
-	public function __construct( float $value )
+	public function __construct( private readonly float $value )
 	{
 		$this->validate( $value );
-
-		$this->value = $value;
 	}
 
 	public function toFloat(): float
