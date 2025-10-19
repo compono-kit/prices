@@ -8,57 +8,63 @@ calculated by the class depending on the instantiation method.
 * PHP >= 8.0
 * compono-kit/price-interfaces
 
+## 📦 Installation
+
+```bash
+composer require compono-kit/prices
+```
+
 ## Instantiation
 
 You have the gross and net amount, as well as the VAT rate
 
 ````PHP
-$net     = new Money( 1672, 'EUR' );
-$gross   = new Money( 1990, 'EUR' );
+$net     = new Money( 1672, new EUR() );
+$gross   = new Money( 1990, new EUR() );
 $vatRate = new VatRate( 19 );
 
 $price = new GrossBasedPrice( $net, $gross, $vatRate );
-$price->getGrossAmount(); //new Money( 1990, 'EUR' )
-$price->getNetAmount(); //new Money( 1672, 'EUR' )
-$price->getVatAmount(); //new Money( 318, 'EUR' )
+$price->getGrossAmount(); //new Money( 1990, new EUR() )
+$price->getNetAmount(); //new Money( 1672, new EUR() )
+$price->getVatAmount(); //new Money( 318, new EUR() )
 $price->getVatRate(); //new VatRate( 19 )
 ````
 
 You have the gross amount and the VAT rate
 
 ````PHP
-$gross   = new Money( 1990, 'EUR' );
+$gross   = new Money( 1990, new EUR() );
 $vatRate = new VatRate( 19 );
 
 $price = GrossBasedPrice::fromGrossAmount( $gross, $vatRate );
-$price->getGrossAmount(); //new Money( 1990, 'EUR' )
-$price->getNetAmount(); //new Money( 1672, 'EUR' )
-$price->getVatAmount(); //new Money( 318, 'EUR' )
+$price->getGrossAmount(); //new Money( 1990, new EUR() )
+$price->getNetAmount(); //new Money( 1672, new EUR() )
+$price->getVatAmount(); //new Money( 318, new EUR() )
 $price->getVatRate(); //new VatRate( 19 )
 ````
 
 You have the net amount and the VAT rate
 
 ````PHP
-$net     = new Money( 1672, 'EUR' );
+$net     = new Money( 1672, new EUR() );
 $vatRate = new VatRate( 19 );
 
 $price = GrossBasedPrice::fromNetAmount( $net, $vatRate );
-$price->getGrossAmount(); //new Money( 1990, 'EUR' )
-$price->getNetAmount(); //new Money( 1672, 'EUR' )
-$price->getVatAmount(); //new Money( 318, 'EUR' )
+$price->getGrossAmount(); //new Money( 1990, new EUR() )
+$price->getNetAmount(); //new Money( 1672, new EUR() )
+$price->getVatAmount(); //new Money( 318, new EUR() )
 $price->getVatRate(); //new VatRate( 19 )
 ````
 
 You want a new price type by another price type
 
 ````PHP
-$grossBasedPrice = GrossBasedPrice::fromGrossAmount( new Money( 1990, 'EUR' ), new VatRate(19) );
+$grossBasedPrice = GrossBasedPrice::fromGrossAmount( new Money( 1990, new EUR() ), new VatRate(19) );
 $netBasedPrice   = NetBasedPrice::fromPrice( $price );
 
-$netBasedPrice->getGrossAmount(); //new Money( 1990, 'EUR' )
-$netBasedPrice->getNetAmount(); //new Money( 1672, 'EUR' )
-$netBasedPrice->getVatAmount(); //new Money( 318, 'EUR' )
+$netBasedPrice->getGrossAmount(); //new Money( 1990, new EUR() )
+$netBasedPrice->getNetAmount(); //new Money( 1672, new EUR() )
+$netBasedPrice->getVatAmount(); //new Money( 318, new EUR() )
 $netBasedPrice->getVatRate(); //new VatRate( 19 )
 ````
 
@@ -105,13 +111,13 @@ VAT is calculated after multiplying the unit price by the quantity.
 Example: `90,82 € * 10 = 908,20 € * 1.19 = 1080,76 €`
 
 ````PHP
-$unitPrice  = NetBasedPrice::fromGrossAmount( new Money( 10808, 'EUR' ) );
+$unitPrice  = NetBasedPrice::fromGrossAmount( new Money( 10808, new EUR() ) );
 $totalPrice = $price->multiply( 10 );
 
-$unitPrice->getGrossAmount(); //new Money( 10808, 'EUR' )
-$unitPrice->getNetAmount(); //new Money( 9082, 'EUR' )
-$totalPrice->getGrossAmount(); //new Money( 108076, 'EUR' )
-$totalPrice->getNetAmount(); //new Money( 90820, 'EUR' )
+$unitPrice->getGrossAmount(); //new Money( 10808, new EUR() )
+$unitPrice->getNetAmount(); //new Money( 9082, new EUR() )
+$totalPrice->getGrossAmount(); //new Money( 108076, new EUR() )
+$totalPrice->getNetAmount(); //new Money( 90820, new EUR() )
 ````
 
 ### `GrossBasedPrice`
@@ -121,13 +127,13 @@ First, the VAT is calculated on the unit price and then multiplied by the quanti
 Example: `90,82 € * 1,19 = 108,08 € * 3 = 1080,80 €`
 
 ````PHP
-$unitPrice  = GrossBasedPrice::fromNetAmount( new Money( 9082, 'EUR' ) );
+$unitPrice  = GrossBasedPrice::fromNetAmount( new Money( 9082, new EUR() ) );
 $totalPrice = $price->multiply( 10 );
 
-$unitPrice->getGrossAmount(); //new Money( 10808, 'EUR' )
-$unitPrice->getNetAmount(); //new Money( 9082, 'EUR' )
-$totalPrice->getGrossAmount(); //new Money( 108080, 'EUR' )
-$totalPrice->getNetAmount(); //new Money( 90824, 'EUR' )
+$unitPrice->getGrossAmount(); //new Money( 10808, new EUR() )
+$unitPrice->getNetAmount(); //new Money( 9082, new EUR() )
+$totalPrice->getGrossAmount(); //new Money( 108080, new EUR() )
+$totalPrice->getNetAmount(); //new Money( 90824, new EUR() )
 ````
 
 ---
@@ -136,13 +142,13 @@ Division works like multiplication, except of course you divide instead of multi
 ## Addition and subtraction
 
 ````PHP
-$price  = GrossBasedPrice::fromGrossAmount( new Money( 1000, 'EUR' ) );
+$price  = GrossBasedPrice::fromGrossAmount( new Money( 1000, new EUR() ) );
 
-$sum    = $price->add( GrossBasedPrice::fromGrossAmount( new Money( 1000, 'EUR' ) ) );
-$sum->getGrossAmount(); //new Money( 2000, 'EUR' )
+$sum    = $price->add( GrossBasedPrice::fromGrossAmount( new Money( 1000, new EUR() ) ) );
+$sum->getGrossAmount(); //new Money( 2000, new EUR() )
 
-$difference = $price->subtract( GrossBasedPrice::fromGrossAmount( new Money( 1000, 'EUR' ) ) );
-$difference->getGrossAmount(); //new Money( 0, 'EUR' )
+$difference = $price->subtract( GrossBasedPrice::fromGrossAmount( new Money( 1000, new EUR() ) ) );
+$difference->getGrossAmount(); //new Money( 0, new EUR() )
 ````
 
 ## TotalPrice
@@ -153,27 +159,27 @@ In this case, the prices are not merely added together, but can be returned, gro
 
 ````PHP
 $prices = [
-    GrossBasedPrice::fromGrossAmount( new Money( 100, 'EUR' ), new VatRate( 19 ) ),
-    FakePriceImplementation::fromGrossAmount( new Money( 300, 'EUR' ), new VatRate( 7 ) ),
+    GrossBasedPrice::fromGrossAmount( new Money( 100, new EUR() ), new VatRate( 19 ) ),
+    FakePriceImplementation::fromGrossAmount( new Money( 300, new EUR() ), new VatRate( 7 ) ),
 ];
-$additionalPrice = GrossBasedPrice::fromGrossAmount( new Money( 100,  'EUR' ), new VatRate( 16.5 ) );
+$additionalPrice = GrossBasedPrice::fromGrossAmount( new Money( 100,  new EUR() ), new VatRate( 16.5 ) );
 
-$totalPrice = new TotalPrice( 'EUR', $prices );
+$totalPrice = new TotalPrice( new MoneyFactory( new EUR() ), $prices );
 $totalPrice->addPrice( $additionalPrice );
 
 $anotherTotalPrice = new TotalPrice( 
-  'EUR', 
+  new MoneyFactory( new EUR() ), 
   [ 
-    NetBasedPrice::fromGrossAmount( new Money( 200,  'EUR'  ), new VatRate( 16.5 ) ),
-    FakePriceImplementation::fromGrossAmount( new Money( 300,  'EUR' ), new VatRate( 16.5 ) ),
+    NetBasedPrice::fromGrossAmount( new Money( 200,  new EUR()  ), new VatRate( 16.5 ) ),
+    FakePriceImplementation::fromGrossAmount( new Money( 300,  new EUR() ), new VatRate( 16.5 ) ),
   ] 
 );
 
 $totalPrice->addTotalPrice( $anotherTotalPrice );
 
 $totalPrice->getPrices(); // Array with prices from $prices, $additionalPrice and the prices from $anotherTotalPrice
-$totalPrice->getTotalGrossAmount(); // new Money( 1000, 'EUR' ) (100 + 300 + 100 + 200 + 300)
-$totalPrice->getTotalNetAmount(); // new Money( 794, 'EUR' ) (100/1,19 + 300/1,07 + (200 + 300)/1,165) 
+$totalPrice->getTotalGrossAmount(); // new Money( 1000, new EUR() ) (100 + 300 + 100 + 200 + 300)
+$totalPrice->getTotalNetAmount(); // new Money( 794, new EUR() ) (100/1,19 + 300/1,07 + (200 + 300)/1,165) 
 $totalPrice->getTotalVatAmount(); // new Money( 206, 'EUR ) (1000 - 794)
 ````
 
@@ -181,19 +187,19 @@ Return by grouped vat rates.
 
 ````PHP
 $prices = [
-    GrossBasedPrice::fromGrossAmount( new Money( 100, 'EUR' ), new VatRate( 19 ) ),
-    GrossBasedPrice::fromGrossAmount( new Money( 200, 'EUR' ), new VatRate( 19 ) ),
-    FakePriceImplementation::fromGrossAmount( new Money( 300, 'EUR' ), new VatRate( 7 ) ),
+    GrossBasedPrice::fromGrossAmount( new Money( 100, new EUR() ), new VatRate( 19 ) ),
+    GrossBasedPrice::fromGrossAmount( new Money( 200, new EUR() ), new VatRate( 19 ) ),
+    FakePriceImplementation::fromGrossAmount( new Money( 300, new EUR() ), new VatRate( 7 ) ),
 ];
-$totalPrice = new TotalPrice( 'EUR', $prices );
+$totalPrice = new TotalPrice( new MoneyFactory( new EUR() ), $prices );
 $totalPrice->getPricesGroupedByVatRates(); 
 /** 
   [ 
     1900 => [ 
-      GrossBasedPrice::fromGrossAmount( new Money( 100, 'EUR' ), new VatRate( 19 ) ),
-      GrossBasedPrice::fromGrossAmount( new Money( 200, 'EUR' ), new VatRate( 19 ) ),
+      GrossBasedPrice::fromGrossAmount( new Money( 100, new EUR() ), new VatRate( 19 ) ),
+      GrossBasedPrice::fromGrossAmount( new Money( 200, new EUR() ), new VatRate( 19 ) ),
     ],
-    700 => [ FakePriceImplementation::fromGrossAmount( new Money( 300, 'EUR' ), new VatRate( 7 ) ) ]
+    700 => [ FakePriceImplementation::fromGrossAmount( new Money( 300, new EUR() ), new VatRate( 7 ) ) ]
   ]
 **/
 ````
@@ -202,11 +208,11 @@ Json
 
 ````PHP
 $prices = [
-  GrossBasedPrice::fromGrossAmount( new Money( 100,  'EUR'  ), new VatRate( 19 ) ),
-  FakePriceImplementation::fromGrossAmount( new Money( 300,  'EUR'  ), new VatRate( 19 ) ),
-  NetBasedPrice::fromGrossAmount( new Money( 200,  'EUR'  ), new VatRate( 7 ) ),
+  GrossBasedPrice::fromGrossAmount( new Money( 100,  new EUR()  ), new VatRate( 19 ) ),
+  FakePriceImplementation::fromGrossAmount( new Money( 300,  new EUR()  ), new VatRate( 19 ) ),
+  NetBasedPrice::fromGrossAmount( new Money( 200,  new EUR()  ), new VatRate( 7 ) ),
 ];
-$totalPrice = new TotalPrice( 'EUR', $prices );
+$totalPrice = new TotalPrice( new MoneyFactory( new EUR() ), $prices );
 json_encode( $totalPrice, JSON_PRETTY_PRINT ); 
 ````
 ````JSON
