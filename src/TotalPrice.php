@@ -11,12 +11,12 @@ use ComponoKit\Prices\Interfaces\RepresentsVatRate;
 
 class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 {
-	private RepresentsMoney $initialMoney;
+	private readonly RepresentsMoney $initialMoney;
 
 	/**
 	 * @param array<int, RepresentsPrice> $prices
 	 */
-	public function __construct( private BuildsMoneys $moneyFactory, private array $prices = [] )
+	public function __construct( private readonly BuildsMoneys $moneyFactory, private readonly array $prices = [] )
 	{
 		$this->initialMoney = $this->moneyFactory->build( 0 );
 	}

@@ -17,10 +17,10 @@ calculated by the class depending on the instantiation method.
 
 ## Requirements
 
-* PHP >= 8.0
+* PHP >= 8.3
 * compono-kit/price-interfaces
 
-## 📦 Installation
+## Installation 📦
 
 ```bash
 composer require compono-kit/prices

@@ -1,4 +1,4 @@
-FROM php:8.0-alpine
+FROM php:8.3-alpine
 ARG GITHUB_TOKEN
 ENV XDEBUG_VERSION 3.4.0
 
