@@ -3,6 +3,18 @@
 PHP types representing prices including gross amount, net amount, vat amount and vat rate A price include the gross, net and VAT amount, as well as the VAT rate. The missing values are automatically
 calculated by the class depending on the instantiation method. 
 
+## Contents
+
+* [Requirements](#requirements)
+* [Installation](#installation)
+* [Instantiation](#instantiation)
+* [VatRate](#vatrate)
+* [Multiplication and division of prices](#multiplication-and-division-of-prices)
+* [Addition and subtraction](#addition-and-subtraction)
+* [TotalPrice](#totalprice)
+* [Json](#json)
+* [Exceptions](#exceptions)
+
 ## Requirements
 
 * PHP >= 8.0
@@ -204,7 +216,7 @@ $totalPrice->getPricesGroupedByVatRates();
 **/
 ````
 
-Json
+## Json
 
 ````PHP
 $prices = [
@@ -241,3 +253,13 @@ json_encode( $totalPrice, JSON_PRETTY_PRINT );
     }
 }
 ````
+
+## Exceptions
+
+### InvalidPriceException
+
+If prices with different VAT rates are added or subtracted `InvalidPriceException` will be thrown
+
+### InvalidVatRateException
+
+If `VatRate` is instantiated with a value less than zero `InvalidVatRateException` will be thrown
