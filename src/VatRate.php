@@ -29,7 +29,7 @@ class VatRate implements RepresentsVatRate
 
 	public function toInt(): int
 	{
-		return (int)($this->value * 100);
+		return (int)(round( $this->value * 100 ));
 	}
 
 	public function equals( RepresentsVatRate $vatRate ): bool
