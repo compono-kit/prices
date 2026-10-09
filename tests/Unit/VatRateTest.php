@@ -4,31 +4,31 @@ namespace ComponoKit\Prices\Tests\Unit;
 
 use ComponoKit\Prices\Exceptions\InvalidVatRateException;
 use ComponoKit\Prices\VatRate;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class VatRateTest extends TestCase
 {
-	public function FloatValueProvider(): array
+	public static function FloatValueProvider(): array
 	{
 		return [
-			[ 19, 1900, '19' ],
-			[ 7.5, 750, '7.5' ],
-			[ 0, 0, '0' ],
-			[ 100, 10000, '100' ],
-			[ 22.3589, 2236, '22.3589' ],
+			[ 19, 19, 1900, '19' ],
+			[ 7.5, 7.5, 750, '7.5' ],
+			[ 0, 0, 0, '0' ],
+			[ 100, 100, 10000, '100' ],
+			[ 22.3589, 22.36, 2236, '22.36' ],
+			[ 0.29, 0.29, 29, '0.29' ],
 		];
 	}
 
-	/**
-	 * @dataProvider FloatValueProvider
-	 */
-	public function testInstantiatingVatRate( float $vatRateValue, int $expectedInt, string $expectedString ): void
+	#[DataProvider( 'FloatValueProvider' )]
+	public function testInstantiatingVatRate( float $vatRateValue, float $expectedFloat, int $expectedInt, string $expectedString ): void
 	{
 		$vatRate = new VatRate( $vatRateValue );
 
-		self::assertEquals( $vatRateValue, $vatRate->toFloat() );
-		self::assertEquals( $expectedInt, $vatRate->toInt() );
-		self::assertEquals( $expectedString, (string)$vatRate );
+		self::assertEqualsWithDelta( $expectedFloat, $vatRate->toFloat(), 0.000001 );
+		self::assertSame( $expectedInt, $vatRate->toInt() );
+		self::assertSame( $expectedString, (string)$vatRate );
 	}
 
 	public function testIfNegativeVatRateThrowsException(): void
@@ -39,7 +39,7 @@ class VatRateTest extends TestCase
 		new VatRate( -1 );
 	}
 
-	public function IntegerValueProvider(): array
+	public static function IntegerValueProvider(): array
 	{
 		return [
 			[ 1900, 19, '19' ],
@@ -50,16 +50,22 @@ class VatRateTest extends TestCase
 		];
 	}
 
-	/**
-	 * @dataProvider IntegerValueProvider
-	 */
+	#[DataProvider( 'IntegerValueProvider' )]
 	public function testInstantiatingFromInt( int $vatRateValue, float $expectedFloat, string $expectedString ): void
 	{
 		$vatRate = VatRate::fromInt( $vatRateValue );
 
-		self::assertEquals( $vatRateValue, $vatRate->toInt() );
-		self::assertEquals( $expectedFloat, $vatRate->toFloat() );
-		self::assertEquals( $expectedString, (string)$vatRate );
+		self::assertSame( $vatRateValue, $vatRate->toInt() );
+		self::assertEqualsWithDelta( $expectedFloat, $vatRate->toFloat(), 0.000001 );
+		self::assertSame( $expectedString, (string)$vatRate );
+	}
+
+	public function testVatRatesWithSameRoundedValueAreEqual(): void
+	{
+		$vatRate = new VatRate( 22.3589 );
+
+		self::assertTrue( $vatRate->equals( VatRate::fromInt( 2236 ) ) );
+		self::assertSame( 0, $vatRate->compare( VatRate::fromInt( 2236 ) ) );
 	}
 
 	public function testEqualsAnotherVatRate(): void
@@ -81,9 +87,9 @@ class VatRateTest extends TestCase
 		$lowerVatRate  = new VatRate( 18.5 );
 		$higherVatRate = new VatRate( 19.5 );
 
-		self::assertEquals( 0, $vatRate->compare( $equalVatRate ) );
-		self::assertEquals( 1, $vatRate->compare( $lowerVatRate ) );
-		self::assertEquals( -1, $vatRate->compare( $higherVatRate ) );
+		self::assertSame( 0, $vatRate->compare( $equalVatRate ) );
+		self::assertSame( 1, $vatRate->compare( $lowerVatRate ) );
+		self::assertSame( -1, $vatRate->compare( $higherVatRate ) );
 	}
 
 	public function testGreaterThanAnotherVatRate(): void

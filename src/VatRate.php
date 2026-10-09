@@ -7,19 +7,13 @@ use ComponoKit\Prices\Interfaces\RepresentsVatRate;
 
 class VatRate implements RepresentsVatRate
 {
-	public function __construct( private readonly float $value )
+	private readonly int $hundredthsOfPercent;
+
+	public function __construct( float $value )
 	{
 		$this->validate( $value );
-	}
 
-	public function toFloat(): float
-	{
-		return $this->value;
-	}
-
-	public function __toString(): string
-	{
-		return (string)$this->value;
+		$this->hundredthsOfPercent = (int)round( $value * 100 );
 	}
 
 	public static function fromInt( int $value ): static
@@ -27,39 +21,49 @@ class VatRate implements RepresentsVatRate
 		return new static( $value / 100 );
 	}
 
+	public function toFloat(): float
+	{
+		return $this->hundredthsOfPercent / 100;
+	}
+
 	public function toInt(): int
 	{
-		return (int)(round( $this->value * 100 ));
+		return $this->hundredthsOfPercent;
+	}
+
+	public function __toString(): string
+	{
+		return (string)$this->toFloat();
 	}
 
 	public function equals( RepresentsVatRate $vatRate ): bool
 	{
-		return $this->value === $vatRate->toFloat();
+		return $this->hundredthsOfPercent === $vatRate->toInt();
 	}
 
 	public function compare( RepresentsVatRate $vatRate ): int
 	{
-		return $this->value <=> $vatRate->toFloat();
+		return $this->hundredthsOfPercent <=> $vatRate->toInt();
 	}
 
 	public function greaterThan( RepresentsVatRate $vatRate ): bool
 	{
-		return $this->value > $vatRate->toFloat();
+		return $this->compare( $vatRate ) > 0;
 	}
 
 	public function greaterThanOrEqual( RepresentsVatRate $vatRate ): bool
 	{
-		return $this->value >= $vatRate->toFloat();
+		return $this->compare( $vatRate ) >= 0;
 	}
 
 	public function lessThan( RepresentsVatRate $vatRate ): bool
 	{
-		return $this->value < $vatRate->toFloat();
+		return $this->compare( $vatRate ) < 0;
 	}
 
 	public function lessThanOrEqual( RepresentsVatRate $vatRate ): bool
 	{
-		return $this->value <= $vatRate->toFloat();
+		return $this->compare( $vatRate ) <= 0;
 	}
 
 	private function validate( float $value ): void

@@ -6,10 +6,7 @@ services:
     container_name: prices_composer
     restart: no
     working_dir: /app
+    environment:
+      COMPOSER_AUTH: '{"github-oauth":{"github.com":"${GITHUB_TOKEN}"}}'
     volumes:
       - ./:/app
-
-networks:
-  default:
-    external: true
-    name: shared
