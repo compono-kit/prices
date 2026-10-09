@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [3.0.0] - unreleased
+## [3.0.0] - 2026-10-09
 
 ### Changed
 * `VatRate` normalizes its value to two decimal places; `equals`, `compare` and the price calculation use the normalized value
