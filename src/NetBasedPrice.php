@@ -2,62 +2,18 @@
 
 namespace ComponoKit\Prices;
 
-use ComponoKit\Prices\Exceptions\InvalidPriceException;
-use ComponoKit\Prices\Interfaces\RepresentsPrice;
+use ComponoKit\Money\Interfaces\RepresentsMoney;
+use ComponoKit\Prices\Interfaces\RepresentsVatRate;
 
 class NetBasedPrice extends AbstractPrice
 {
-	public function multiply( float $quantity ): RepresentsPrice
+	protected function getBaseAmount(): RepresentsMoney
 	{
-		return self::fromNetAmount( $this->netAmount->multiply( $quantity ), $this->vatRate );
+		return $this->netAmount;
 	}
 
-	public function divide( float $quantity ): RepresentsPrice
+	protected static function fromBaseAmount( RepresentsMoney $baseAmount, RepresentsVatRate $vatRate ): static
 	{
-		return self::fromNetAmount( $this->netAmount->divide( $quantity ), $this->vatRate );
-	}
-
-	/**
-	 * @throws InvalidPriceException
-	 */
-	public function add( RepresentsPrice $price ): static
-	{
-		$this->validatePrice( $price );
-
-		return self::fromNetAmount( $this->netAmount->add( $price->getNetAmount() ), $price->getVatRate() );
-	}
-
-	/**
-	 * @throws InvalidPriceException
-	 */
-	public function subtract( RepresentsPrice $price ): static
-	{
-		$this->validatePrice( $price );
-
-		return self::fromNetAmount( $this->netAmount->subtract( $price->getNetAmount() ), $price->getVatRate() );
-	}
-
-	/**
-	 * @return \Iterator<int,static>
-	 */
-	public function allocateToTargets( int $numberOfTargets ): \Iterator
-	{
-		foreach ( $this->netAmount->allocateToTargets( $numberOfTargets ) as $allocatedMoney )
-		{
-			yield static::fromNetAmount( $allocatedMoney, $this->vatRate );
-		}
-	}
-
-	/**
-	 * @param array<int,int> $ratios
-	 *
-	 * @return \Iterator<int, static>
-	 */
-	public function allocateByRatios( array $ratios ): \Iterator
-	{
-		foreach ( $this->netAmount->allocateByRatios( $ratios ) as $allocatedMoney )
-		{
-			yield static::fromNetAmount( $allocatedMoney, $this->vatRate );
-		}
+		return static::fromNetAmount( $baseAmount, $vatRate );
 	}
 }

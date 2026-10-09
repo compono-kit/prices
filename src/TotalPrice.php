@@ -5,6 +5,7 @@ namespace ComponoKit\Prices;
 use ComponoKit\Money\Interfaces\BuildsMoneys;
 use ComponoKit\Money\Interfaces\RepresentsCurrency;
 use ComponoKit\Money\Interfaces\RepresentsMoney;
+use ComponoKit\Prices\Exceptions\InvalidPriceException;
 use ComponoKit\Prices\Interfaces\RepresentsPrice;
 use ComponoKit\Prices\Interfaces\RepresentsTotalPrice;
 use ComponoKit\Prices\Interfaces\RepresentsVatRate;
@@ -15,10 +16,17 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 
 	/**
 	 * @param array<int, RepresentsPrice> $prices
+	 *
+	 * @throws InvalidPriceException
 	 */
 	public function __construct( private readonly BuildsMoneys $moneyFactory, private readonly array $prices = [] )
 	{
 		$this->initialMoney = $this->moneyFactory->build( 0 );
+
+		foreach ( $this->prices as $price )
+		{
+			$this->validateCurrency( $price );
+		}
 	}
 
 	public static function fromTotalPrice( RepresentsTotalPrice $totalPrice ): static
@@ -46,37 +54,24 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 		return new static( $this->moneyFactory, $allPrices );
 	}
 
+	public function subtractPrice( RepresentsPrice $price ): static
+	{
+		return $this->addPrice( $price->multiply( -1 ) );
+	}
+
 	public function getTotalGrossAmount(): RepresentsMoney
 	{
-		$totalGrossAmount = $this->moneyFactory->build( 0 );
-		foreach ( $this->prices as $price )
-		{
-			$totalGrossAmount = $totalGrossAmount->add( $price->getGrossAmount() );
-		}
-
-		return $totalGrossAmount;
+		return $this->sumAmounts( fn( RepresentsPrice $price ): RepresentsMoney => $price->getGrossAmount() );
 	}
 
 	public function getTotalNetAmount(): RepresentsMoney
 	{
-		$totalNetAmount = $this->initialMoney;
-		foreach ( $this->prices as $price )
-		{
-			$totalNetAmount = $totalNetAmount->add( $price->getNetAmount() );
-		}
-
-		return $totalNetAmount;
+		return $this->sumAmounts( fn( RepresentsPrice $price ): RepresentsMoney => $price->getNetAmount() );
 	}
 
 	public function getTotalVatAmount(): RepresentsMoney
 	{
-		$totalVatAmount = $this->initialMoney;
-		foreach ( $this->prices as $price )
-		{
-			$totalVatAmount = $totalVatAmount->add( $price->getVatAmount() );
-		}
-
-		return $totalVatAmount;
+		return $this->sumAmounts( fn( RepresentsPrice $price ): RepresentsMoney => $price->getVatAmount() );
 	}
 
 	/**
@@ -117,6 +112,39 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 	}
 
 	/**
+	 * @template TPrice of AbstractPrice
+	 *
+	 * @param class-string<TPrice> $priceClass
+	 *
+	 * @return array<int, TPrice>
+	 */
+	public function getTotalsGroupedByVatRates( string $priceClass ): array
+	{
+		if ( !is_subclass_of( $priceClass, AbstractPrice::class ) )
+		{
+			throw new \InvalidArgumentException(
+				sprintf( '%s must extend %s', $priceClass, AbstractPrice::class )
+			);
+		}
+
+		$totals = [];
+
+		foreach ( $this->getPricesGroupedByVatRates() as $vatRate => $prices )
+		{
+			$total = $priceClass::fromPrice( array_shift( $prices ) );
+
+			foreach ( $prices as $price )
+			{
+				$total = $total->add( $price );
+			}
+
+			$totals[ $vatRate ] = $total;
+		}
+
+		return $totals;
+	}
+
+	/**
 	 * @return array<int, RepresentsPrice>
 	 */
 	public function getPrices(): array
@@ -129,22 +157,57 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 		return $this->moneyFactory;
 	}
 
+	/**
+	 * @return array{currencyCode: string, prices: object}
+	 */
 	public function jsonSerialize(): array
 	{
-		$data = [ 'currency-code' => $this->initialMoney->getCurrency()->getIsoCode() ];
+		$pricesGroupedByVatRates = [];
 
 		foreach ( $this->getPricesGroupedByVatRates() as $vatRate => $prices )
 		{
 			foreach ( $prices as $price )
 			{
-				$data['prices'][ $vatRate ][] = [
-					'gross' => $price->getGrossAmount()->getAmount(),
-					'net'   => $price->getNetAmount()->getAmount(),
-					'vat'   => $price->getVatAmount()->getAmount(),
+				$pricesGroupedByVatRates[ $vatRate ][] = [
+					'grossAmount' => $price->getGrossAmount()->getAmount(),
+					'netAmount'   => $price->getNetAmount()->getAmount(),
+					'vatAmount'   => $price->getVatAmount()->getAmount(),
 				];
 			}
 		}
 
-		return $data;
+		return [
+			'currencyCode' => $this->getCurrency()->getIsoCode(),
+			'prices'       => (object)$pricesGroupedByVatRates,
+		];
+	}
+
+	/**
+	 * @param callable(RepresentsPrice): RepresentsMoney $selectAmount
+	 */
+	private function sumAmounts( callable $selectAmount ): RepresentsMoney
+	{
+		$totalAmount = $this->initialMoney;
+
+		foreach ( $this->prices as $price )
+		{
+			$totalAmount = $totalAmount->add( $selectAmount( $price ) );
+		}
+
+		return $totalAmount;
+	}
+
+	private function validateCurrency( RepresentsPrice $price ): void
+	{
+		if ( !$this->initialMoney->hasSameCurrency( $price->getGrossAmount() ) )
+		{
+			throw new InvalidPriceException(
+				sprintf(
+					'Price currency %s does not match total price currency %s',
+					$price->getCurrency()->getIsoCode(),
+					$this->getCurrency()->getIsoCode()
+				)
+			);
+		}
 	}
 }

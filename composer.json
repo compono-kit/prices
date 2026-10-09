@@ -1,9 +1,7 @@
 {
 	"name": "compono-kit/prices",
 	"description": "Implementations for compono-kit/price-interfaces",
-	"minimum-stability": "dev",
-	"prefer-stable": true,
-	"license": "proprietary",
+	"license": "MIT",
 	"authors": [
 		{
 			"name": "Benjamin Bruska",
@@ -13,10 +11,13 @@
 	"require": {
 		"php": ">=8.3",
 		"ext-json": "*",
-		"compono-kit/price-interfaces": "^1.0.0"
+		"compono-kit/money-interfaces": "^1.0",
+		"compono-kit/price-interfaces": "^1.0"
 	},
 	"require-dev": {
-		"phpunit/phpunit": "^9.0.0",
+		"phpstan/phpstan": "^2.0",
+		"phpstan/phpstan-phpunit": "^2.0",
+		"phpunit/phpunit": "^11.0",
 		"roave/security-advisories": "dev-latest"
 	},
 	"autoload": {
@@ -28,5 +29,16 @@
 		"psr-4": {
 			"ComponoKit\\Prices\\Tests\\": "tests/"
 		}
+	},
+	"scripts": {
+		"test": "phpunit -c build/phpunit.xml",
+		"analyse": "phpstan analyse -c build/phpstan.neon",
+		"check": [
+			"@analyse",
+			"@test"
+		]
+	},
+	"config": {
+		"sort-packages": true
 	}
 }

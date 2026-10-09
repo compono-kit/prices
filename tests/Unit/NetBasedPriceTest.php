@@ -3,192 +3,171 @@
 namespace ComponoKit\Prices\Tests\Unit;
 
 use ComponoKit\Prices\Exceptions\InvalidPriceException;
-use ComponoKit\Prices\Interfaces\RepresentsPrice;
 use ComponoKit\Prices\NetBasedPrice;
 use ComponoKit\Prices\Tests\Unit\fakes\BuildingFakeMoneys;
 use ComponoKit\Prices\Tests\Unit\fakes\FakePriceImplementation;
 use ComponoKit\Prices\VatRate;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class NetBasedPriceTest extends TestCase
 {
 	use BuildingFakeMoneys;
 
-	public function LineItemLevelFromGrossMultiplyDataProvider(): array
+	public static function LineItemLevelFromGrossMultiplyDataProvider(): array
 	{
 		return [
-			[ 'unitGross' => 100, 'vatRat' => 19, 'quantity' => 1, 'totalNet' => 84, 'totalGross' => 100, 'unitNet' => 84 ],
-			[ 'unitGross' => 108, 'vatRat' => 19, 'quantity' => 10, 'totalNet' => 910, 'totalGross' => 1083, 'unitNet' => 91 ],
-			[ 'unitGross' => 10808, 'vatRat' => 19, 'quantity' => 10, 'totalNet' => 90820, 'totalGross' => 108076, 'unitNet' => 9082 ],
-			[ 'unitGross' => -108, 'vatRat' => 19, 'quantity' => 10, 'totalNet' => -910, 'totalGross' => -1083, 'unitNet' => -91 ],
-			[ 'unitGross' => -10808, 'vatRat' => 19, 'quantity' => 10, 'totalNet' => -90820, 'totalGross' => -108076, 'unitNet' => -9082 ],
-			[ 'unitGross' => 200, 'vatRat' => 19, 'quantity' => 1, 'totalNet' => 168, 'totalGross' => 200, 'unitNet' => 168 ],
-			[ 'unitGross' => 1, 'vatRat' => 19, 'quantity' => 50, 'totalNet' => 50, 'totalGross' => 60, 'unitNet' => 1 ],
-			[ 'unitGross' => 490, 'vatRat' => 19, 'quantity' => 1, 'totalNet' => 412, 'totalGross' => 490, 'unitNet' => 412 ],
-			[ 'unitGross' => 129, 'vatRat' => 19, 'quantity' => 3, 'totalNet' => 324, 'totalGross' => 386, 'unitNet' => 108 ],
-			[ 'unitGross' => -129, 'vatRat' => 19, 'quantity' => 3, 'totalNet' => -324, 'totalGross' => -386, 'unitNet' => -108 ],
-			[ 'unitGross' => 129, 'vatRate' => 19, 'quantity' => 1.45, 'totalNet' => 157, 'totalGross' => 187, 'unitNet' => 108 ],
-			[ 'unitGross' => -129, 'vatRate' => 19, 'quantity' => 1.45, 'totalNet' => -157, 'totalGross' => -187, 'unitNet' => -108 ],
+			[ 100, 19, 1, 84, 100, 84 ],
+			[ 108, 19, 10, 910, 1083, 91 ],
+			[ 10808, 19, 10, 90820, 108076, 9082 ],
+			[ -108, 19, 10, -910, -1083, -91 ],
+			[ -10808, 19, 10, -90820, -108076, -9082 ],
+			[ 200, 19, 1, 168, 200, 168 ],
+			[ 1, 19, 50, 50, 60, 1 ],
+			[ 490, 19, 1, 412, 490, 412 ],
+			[ 129, 19, 3, 324, 386, 108 ],
+			[ -129, 19, 3, -324, -386, -108 ],
+			[ 129, 19, 1.45, 157, 187, 108 ],
+			[ -129, 19, 1.45, -157, -187, -108 ],
 		];
 	}
 
-	/**
-	 * @dataProvider LineItemLevelFromGrossMultiplyDataProvider
-	 */
-	public function testCalculatingTaxBeforeMultiplyingByQuantityFromGross(
+	#[DataProvider( 'LineItemLevelFromGrossMultiplyDataProvider' )]
+	public function testCalculatingTaxAfterMultiplyingByQuantityFromGross(
 		int $unitGrossAmount, float $vatRate, float $quantity, int $expectedTotalNetAmount, int $expectedTotalGrossAmount, int $expectedUnitNetAmount
 	): void
 	{
 		$unitPrice  = NetBasedPrice::fromGrossAmount( $this->buildMoney( $unitGrossAmount, 'EUR' ), new VatRate( $vatRate ) );
 		$totalPrice = $unitPrice->multiply( $quantity );
 
-		self::assertEquals( $expectedTotalNetAmount, $totalPrice->getNetAmount()->getAmount() );
-		self::assertEquals( $expectedTotalGrossAmount, $totalPrice->getGrossAmount()->getAmount() );
-		self::assertEquals( $unitGrossAmount, $unitPrice->getGrossAmount()->getAmount() );
-		self::assertEquals( $expectedUnitNetAmount, $unitPrice->getNetAmount()->getAmount() );
+		self::assertInstanceOf( NetBasedPrice::class, $totalPrice );
+		self::assertSame( $expectedTotalNetAmount, $totalPrice->getNetAmount()->getAmount() );
+		self::assertSame( $expectedTotalGrossAmount, $totalPrice->getGrossAmount()->getAmount() );
+		self::assertSame( $unitGrossAmount, $unitPrice->getGrossAmount()->getAmount() );
+		self::assertSame( $expectedUnitNetAmount, $unitPrice->getNetAmount()->getAmount() );
 	}
 
-	public function LineItemLevelFromNetMultiplyDataProvider(): array
+	public static function LineItemLevelFromNetMultiplyDataProvider(): array
 	{
 		return [
-			[ 'unitNet' => 84, 'vatRat' => 19, 'quantity' => 1, 'totalNet' => 84, 'totalGross' => 100, 'unitGross' => 100 ],
-			[ 'unitNet' => 91, 'vatRat' => 19, 'quantity' => 10, 'totalNet' => 910, 'totalGross' => 1083, 'unitGross' => 108 ],
-			[ 'unitNet' => 9082, 'vatRat' => 19, 'quantity' => 10, 'totalNet' => 90820, 'totalGross' => 108076, 'unitGross' => 10808 ],
-			[ 'unitNet' => -91, 'vatRat' => 19, 'quantity' => 10, 'totalNet' => -910, 'totalGross' => -1083, 'unitGross' => -108 ],
-			[ 'unitNet' => -9082, 'vatRat' => 19, 'quantity' => 10, 'totalNet' => -90820, 'totalGross' => -108076, 'unitGross' => -10808 ],
-			[ 'unitNet' => 168, 'vatRat' => 19, 'quantity' => 1, 'totalNet' => 168, 'totalGross' => 200, 'unitGross' => 200 ],
-			[ 'unitNet' => 1, 'vatRat' => 19, 'quantity' => 50, 'totalNet' => 50, 'totalGross' => 60, 'unitGross' => 1 ],
-			[ 'unitNet' => 412, 'vatRat' => 19, 'quantity' => 1, 'totalNet' => 412, 'totalGross' => 490, 'unitGross' => 490 ],
-			[ 'unitNet' => 108, 'vatRat' => 19, 'quantity' => 3, 'totalNet' => 324, 'totalGross' => 386, 'unitGross' => 129 ],
-			[ 'unitNet' => -108, 'vatRat' => 19, 'quantity' => 3, 'totalNet' => -324, 'totalGross' => -386, 'unitGross' => -129 ],
-			[ 'unitNet' => 108, 'vatRate' => 19, 'quantity' => 1.45, 'totalNet' => 157, 'totalGross' => 187, 'unitGross' => 129 ],
-			[ 'unitNet' => -108, 'vatRate' => 19, 'quantity' => 1.45, 'totalNet' => -157, 'totalGross' => -187, 'unitGross' => -129 ],
+			[ 84, 19, 1, 84, 100, 100 ],
+			[ 91, 19, 10, 910, 1083, 108 ],
+			[ 9082, 19, 10, 90820, 108076, 10808 ],
+			[ -91, 19, 10, -910, -1083, -108 ],
+			[ -9082, 19, 10, -90820, -108076, -10808 ],
+			[ 168, 19, 1, 168, 200, 200 ],
+			[ 1, 19, 50, 50, 60, 1 ],
+			[ 412, 19, 1, 412, 490, 490 ],
+			[ 108, 19, 3, 324, 386, 129 ],
+			[ -108, 19, 3, -324, -386, -129 ],
+			[ 108, 19, 1.45, 157, 187, 129 ],
+			[ -108, 19, 1.45, -157, -187, -129 ],
 		];
 	}
 
-	/**
-	 * @dataProvider LineItemLevelFromNetMultiplyDataProvider
-	 */
-	public function testCalculatingTaxBeforeMultiplyingByQuantityFromNet(
+	#[DataProvider( 'LineItemLevelFromNetMultiplyDataProvider' )]
+	public function testCalculatingTaxAfterMultiplyingByQuantityFromNet(
 		int $unitNetAmount, float $vatRate, float $quantity, int $expectedTotalNetAmount, int $expectedTotalGrossAmount, int $expectedUnitGrossAmount
 	): void
 	{
 		$unitPrice  = NetBasedPrice::fromNetAmount( $this->buildMoney( $unitNetAmount, 'EUR' ), new VatRate( $vatRate ) );
 		$totalPrice = $unitPrice->multiply( $quantity );
 
-		self::assertEquals( $expectedTotalNetAmount, $totalPrice->getNetAmount()->getAmount() );
-		self::assertEquals( $expectedTotalGrossAmount, $totalPrice->getGrossAmount()->getAmount() );
-		self::assertEquals( $unitNetAmount, $unitPrice->getNetAmount()->getAmount() );
-		self::assertEquals( $expectedUnitGrossAmount, $unitPrice->getGrossAmount()->getAmount() );
+		self::assertSame( $expectedTotalNetAmount, $totalPrice->getNetAmount()->getAmount() );
+		self::assertSame( $expectedTotalGrossAmount, $totalPrice->getGrossAmount()->getAmount() );
+		self::assertSame( $unitNetAmount, $unitPrice->getNetAmount()->getAmount() );
+		self::assertSame( $expectedUnitGrossAmount, $unitPrice->getGrossAmount()->getAmount() );
 	}
 
-	public function LineItemLevelFromGrossDivideDataProvider(): array
+	public static function LineItemLevelFromGrossDivideDataProvider(): array
 	{
 		return [
-			[ 'totalGross' => 100, 'vatRat' => 19, 'quantity' => 1, 'unitNet' => 84, 'unitGross' => 100, 'totalNet' => 84 ],
-			[ 'totalGross' => 1083, 'vatRat' => 19, 'quantity' => 10, 'unitNet' => 91, 'unitGross' => 108, 'totalNet' => 910 ],
-			[ 'totalGross' => 108076, 'vatRat' => 19, 'quantity' => 10, 'unitNet' => 9082, 'unitGross' => 10808, 'totalNet' => 90820 ],
-			[ 'totalGross' => -1083, 'vatRat' => 19, 'quantity' => 10, 'unitNet' => -91, 'unitGross' => -108, 'totalNet' => -910 ],
-			[ 'totalGross' => -108076, 'vatRat' => 19, 'quantity' => 10, 'unitNet' => -9082, 'unitGross' => -10808, 'totalNet' => -90820 ],
-			[ 'totalGross' => 200, 'vatRat' => 19, 'quantity' => 1, 'unitNet' => 168, 'unitGross' => 200, 'totalNet' => 168 ],
-			[ 'totalGross' => 60, 'vatRat' => 19, 'quantity' => 50, 'unitNet' => 1, 'unitGross' => 1, 'totalNet' => 50 ],
-			[ 'totalGross' => 490, 'vatRat' => 19, 'quantity' => 1, 'unitNet' => 412, 'unitGross' => 490, 'totalNet' => 412 ],
-			[ 'totalGross' => 386, 'vatRat' => 19, 'quantity' => 3, 'unitNet' => 108, 'unitGross' => 129, 'totalNet' => 324 ],
-			[ 'totalGross' => -386, 'vatRat' => 19, 'quantity' => 3, 'unitNet' => -108, 'unitGross' => -129, 'totalNet' => -324 ],
-			[ 'totalGross' => 187, 'vatRate' => 19, 'quantity' => 1.45, 'unitNet' => 108, 'unitGross' => 129, 'totalNet' => 157 ],
-			[ 'totalGross' => -187, 'vatRate' => 19, 'quantity' => 1.45, 'unitNet' => -108, 'unitGross' => -129, 'totalNet' => -157 ],
+			[ 100, 19, 1, 84, 100, 84 ],
+			[ 1083, 19, 10, 91, 108, 910 ],
+			[ 108076, 19, 10, 9082, 10808, 90820 ],
+			[ -1083, 19, 10, -91, -108, -910 ],
+			[ -108076, 19, 10, -9082, -10808, -90820 ],
+			[ 200, 19, 1, 168, 200, 168 ],
+			[ 60, 19, 50, 1, 1, 50 ],
+			[ 490, 19, 1, 412, 490, 412 ],
+			[ 386, 19, 3, 108, 129, 324 ],
+			[ -386, 19, 3, -108, -129, -324 ],
+			[ 187, 19, 1.45, 108, 129, 157 ],
+			[ -187, 19, 1.45, -108, -129, -157 ],
 		];
 	}
 
-	/**
-	 * @dataProvider LineItemLevelFromGrossDivideDataProvider
-	 */
-	public function testCalculatingTaxBeforeDividingByQuantityFromGross(
+	#[DataProvider( 'LineItemLevelFromGrossDivideDataProvider' )]
+	public function testCalculatingTaxAfterDividingByQuantityFromGross(
 		int $totalGrossAmount, float $vatRate, float $quantity, int $expectedUnitNetAmount, int $expectedUnitGrossAmount, int $expectedTotalNetAmount
 	): void
 	{
 		$totalPrice = NetBasedPrice::fromGrossAmount( $this->buildMoney( $totalGrossAmount, 'EUR' ), new VatRate( $vatRate ) );
 		$unitPrice  = $totalPrice->divide( $quantity );
 
-		self::assertEquals( $expectedUnitNetAmount, $unitPrice->getNetAmount()->getAmount() );
-		self::assertEquals( $expectedUnitGrossAmount, $unitPrice->getGrossAmount()->getAmount() );
-		self::assertEquals( $expectedTotalNetAmount, $totalPrice->getNetAmount()->getAmount() );
-		self::assertEquals( $totalGrossAmount, $totalPrice->getGrossAmount()->getAmount() );
+		self::assertInstanceOf( NetBasedPrice::class, $unitPrice );
+		self::assertSame( $expectedUnitNetAmount, $unitPrice->getNetAmount()->getAmount() );
+		self::assertSame( $expectedUnitGrossAmount, $unitPrice->getGrossAmount()->getAmount() );
+		self::assertSame( $expectedTotalNetAmount, $totalPrice->getNetAmount()->getAmount() );
+		self::assertSame( $totalGrossAmount, $totalPrice->getGrossAmount()->getAmount() );
 	}
 
-	public function LineItemLevelFromNetDivideDataProvider(): array
+	public static function LineItemLevelFromNetDivideDataProvider(): array
 	{
 		return [
-			[ 'totalNet' => 84, 'vatRat' => 19, 'quantity' => 1, 'unitNet' => 84, 'unitGross' => 100, 'totalGross' => 100 ],
-			[ 'totalNet' => 910, 'vatRat' => 19, 'quantity' => 10, 'unitNet' => 91, 'unitGross' => 108, 'totalGross' => 1083 ],
-			[ 'totalNet' => 90820, 'vatRat' => 19, 'quantity' => 10, 'unitNet' => 9082, 'unitGross' => 10808, 'totalGross' => 108076 ],
-			[ 'totalNet' => -910, 'vatRat' => 19, 'quantity' => 10, 'unitNet' => -91, 'unitGross' => -108, 'totalGross' => -1083 ],
-			[ 'totalNet' => -90820, 'vatRat' => 19, 'quantity' => 10, 'unitNet' => -9082, 'unitGross' => -10808, 'totalGross' => -108076 ],
-			[ 'totalNet' => 168, 'vatRat' => 19, 'quantity' => 1, 'unitNet' => 168, 'unitGross' => 200, 'totalGross' => 200 ],
-			[ 'totalNet' => 50, 'vatRat' => 19, 'quantity' => 50, 'unitNet' => 1, 'unitGross' => 1, 'totalGross' => 60 ],
-			[ 'totalNet' => 412, 'vatRat' => 19, 'quantity' => 1, 'unitNet' => 412, 'unitGross' => 490, 'totalGross' => 490 ],
-			[ 'totalNet' => 324, 'vatRat' => 19, 'quantity' => 3, 'unitNet' => 108, 'unitGross' => 129, 'totalGross' => 386 ],
-			[ 'totalNet' => -324, 'vatRat' => 19, 'quantity' => 3, 'unitNet' => -108, 'unitGross' => -129, 'totalGross' => -386 ],
-			[ 'totalNet' => 157, 'vatRate' => 19, 'quantity' => 1.45, 'unitNet' => 108, 'unitGross' => 129, 'totalGross' => 187 ],
-			[ 'totalNet' => -157, 'vatRate' => 19, 'quantity' => 1.45, 'unitNet' => -108, 'unitGross' => -129, 'totalGross' => -187 ],
+			[ 84, 19, 1, 84, 100, 100 ],
+			[ 910, 19, 10, 91, 108, 1083 ],
+			[ 90820, 19, 10, 9082, 10808, 108076 ],
+			[ -910, 19, 10, -91, -108, -1083 ],
+			[ -90820, 19, 10, -9082, -10808, -108076 ],
+			[ 168, 19, 1, 168, 200, 200 ],
+			[ 50, 19, 50, 1, 1, 60 ],
+			[ 412, 19, 1, 412, 490, 490 ],
+			[ 324, 19, 3, 108, 129, 386 ],
+			[ -324, 19, 3, -108, -129, -386 ],
+			[ 157, 19, 1.45, 108, 129, 187 ],
+			[ -157, 19, 1.45, -108, -129, -187 ],
 		];
 	}
 
-	/**
-	 * @dataProvider LineItemLevelFromNetDivideDataProvider
-	 */
-	public function testCalculatingTaxBeforeDividingByQuantityFromNet(
+	#[DataProvider( 'LineItemLevelFromNetDivideDataProvider' )]
+	public function testCalculatingTaxAfterDividingByQuantityFromNet(
 		int $totalNetAmount, float $vatRate, float $quantity, int $expectedUnitNetAmount, int $expectedUnitGrossAmount, int $expectedTotalGrossAmount
 	): void
 	{
 		$totalPrice = NetBasedPrice::fromNetAmount( $this->buildMoney( $totalNetAmount, 'EUR' ), new VatRate( $vatRate ) );
 		$unitPrice  = $totalPrice->divide( $quantity );
 
-		self::assertEquals( $expectedUnitNetAmount, $unitPrice->getNetAmount()->getAmount() );
-		self::assertEquals( $expectedUnitGrossAmount, $unitPrice->getGrossAmount()->getAmount() );
-		self::assertEquals( $totalNetAmount, $totalPrice->getNetAmount()->getAmount() );
-		self::assertEquals( $expectedTotalGrossAmount, $totalPrice->getGrossAmount()->getAmount() );
+		self::assertSame( $expectedUnitNetAmount, $unitPrice->getNetAmount()->getAmount() );
+		self::assertSame( $expectedUnitGrossAmount, $unitPrice->getGrossAmount()->getAmount() );
+		self::assertSame( $totalNetAmount, $totalPrice->getNetAmount()->getAmount() );
+		self::assertSame( $expectedTotalGrossAmount, $totalPrice->getGrossAmount()->getAmount() );
 	}
 
-	public function AddingPriceDataProvider(): array
+	public static function AddingPriceDataProvider(): array
 	{
 		return [
-			[
-				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( $this->buildMoney( 1000, 'EUR' ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( $this->buildMoney( 4990, 'EUR' ), new VatRate( 19 ) ),
-			],
-			[
-				NetBasedPrice::fromNetAmount( $this->buildMoney( -3990, 'EUR' ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( $this->buildMoney( 1000, 'EUR' ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( $this->buildMoney( -2990, 'EUR' ), new VatRate( 19 ) ),
-			],
-			[
-				NetBasedPrice::fromNetAmount( $this->buildMoney( -3990, 'EUR' ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( $this->buildMoney( 5090, 'EUR' ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( $this->buildMoney( 1100, 'EUR' ), new VatRate( 19 ) ),
-			],
-			[
-				NetBasedPrice::fromNetAmount( $this->buildMoney( -3990, 'EUR' ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
-			],
-			[
-				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
-			],
+			[ 3990, 1000, 4990 ],
+			[ -3990, 1000, -2990 ],
+			[ -3990, 5090, 1100 ],
+			[ -3990, 3990, 0 ],
+			[ 3990, 0, 3990 ],
 		];
 	}
 
-	/**
-	 * @dataProvider AddingPriceDataProvider
-	 */
-	public function testAddingPrice( NetBasedPrice $originalPrice, RepresentsPrice $additionalPrice, NetBasedPrice $expectedPrice ): void
+	#[DataProvider( 'AddingPriceDataProvider' )]
+	public function testAddingPrice( int $originalNetAmount, int $additionalNetAmount, int $expectedNetAmount ): void
 	{
+		$originalPrice   = NetBasedPrice::fromNetAmount( $this->buildMoney( $originalNetAmount, 'EUR' ), new VatRate( 19 ) );
+		$additionalPrice = FakePriceImplementation::fromNetAmount( $this->buildMoney( $additionalNetAmount, 'EUR' ), new VatRate( 19 ) );
+		$expectedPrice   = NetBasedPrice::fromNetAmount( $this->buildMoney( $expectedNetAmount, 'EUR' ), new VatRate( 19 ) );
+
 		$summedPrice = $originalPrice->add( $additionalPrice );
 
-		self::assertEquals( $expectedPrice, $summedPrice );
+		self::assertInstanceOf( NetBasedPrice::class, $summedPrice );
+		self::assertSame( $expectedPrice->getNetAmount()->getAmount(), $summedPrice->getNetAmount()->getAmount() );
+		self::assertSame( $expectedPrice->getGrossAmount()->getAmount(), $summedPrice->getGrossAmount()->getAmount() );
+		self::assertTrue( $expectedPrice->getVatRate()->equals( $summedPrice->getVatRate() ) );
 	}
 
 	public function testAddingPriceWithDifferentVatRateThrowsException(): void
@@ -199,50 +178,31 @@ class NetBasedPriceTest extends TestCase
 		$price->add( NetBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 7 ) ) );
 	}
 
-	public function SubtractingPriceDataProvider(): array
+	public static function SubtractingPriceDataProvider(): array
 	{
 		return [
-			[
-				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( $this->buildMoney( 1000, 'EUR' ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( $this->buildMoney( 2990, 'EUR' ), new VatRate( 19 ) ),
-			],
-			[
-				NetBasedPrice::fromNetAmount( $this->buildMoney( -3990, 'EUR' ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( $this->buildMoney( 1000, 'EUR' ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( $this->buildMoney( -4990, 'EUR' ), new VatRate( 19 ) ),
-			],
-			[
-				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( $this->buildMoney( 5000, 'EUR' ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( $this->buildMoney( -1010, 'EUR' ), new VatRate( 19 ) ),
-			],
-			[
-				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
-			],
-			[
-				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( $this->buildMoney( 3990, 'EUR' ), new VatRate( 19 ) ),
-			],
-			[
-				NetBasedPrice::fromNetAmount( $this->buildMoney( -1000, 'EUR' ), new VatRate( 19 ) ),
-				FakePriceImplementation::fromNetAmount( $this->buildMoney( -1000, 'EUR' ), new VatRate( 19 ) ),
-				NetBasedPrice::fromNetAmount( $this->buildMoney( 0, 'EUR' ), new VatRate( 19 ) ),
-			],
+			[ 3990, 1000, 2990 ],
+			[ -3990, 1000, -4990 ],
+			[ 3990, 5000, -1010 ],
+			[ 3990, 3990, 0 ],
+			[ 3990, 0, 3990 ],
+			[ -1000, -1000, 0 ],
 		];
 	}
 
-	/**
-	 * @dataProvider SubtractingPriceDataProvider
-	 */
-	public function testSubtractingPrice( NetBasedPrice $originalPrice, RepresentsPrice $priceToSubtract, NetBasedPrice $expectedPrice ): void
+	#[DataProvider( 'SubtractingPriceDataProvider' )]
+	public function testSubtractingPrice( int $originalNetAmount, int $subtractedNetAmount, int $expectedNetAmount ): void
 	{
-		$priceResult = $originalPrice->subtract( $priceToSubtract );
+		$originalPrice   = NetBasedPrice::fromNetAmount( $this->buildMoney( $originalNetAmount, 'EUR' ), new VatRate( 19 ) );
+		$subtractedPrice = FakePriceImplementation::fromNetAmount( $this->buildMoney( $subtractedNetAmount, 'EUR' ), new VatRate( 19 ) );
+		$expectedPrice   = NetBasedPrice::fromNetAmount( $this->buildMoney( $expectedNetAmount, 'EUR' ), new VatRate( 19 ) );
 
-		self::assertEquals( $expectedPrice, $priceResult );
+		$priceResult = $originalPrice->subtract( $subtractedPrice );
+
+		self::assertInstanceOf( NetBasedPrice::class, $priceResult );
+		self::assertSame( $expectedPrice->getNetAmount()->getAmount(), $priceResult->getNetAmount()->getAmount() );
+		self::assertSame( $expectedPrice->getGrossAmount()->getAmount(), $priceResult->getGrossAmount()->getAmount() );
+		self::assertTrue( $expectedPrice->getVatRate()->equals( $priceResult->getVatRate() ) );
 	}
 
 	public function testSubtractingPriceWithDifferentVatRateThrowsException(): void
@@ -251,23 +211,5 @@ class NetBasedPriceTest extends TestCase
 
 		$price = NetBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 19 ) );
 		$price->subtract( NetBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 7 ) ) );
-	}
-
-	public function testAllocatingPriceToTargets(): void
-	{
-		$money = $this->buildMoney( 99, 'EUR' );
-		$money->expects( self::once() )
-		      ->method( 'allocateToTargets' );
-
-		iterator_to_array( NetBasedPrice::fromNetAmount( $money, new VatRate( 19 ) )->allocateToTargets( 10 ) );
-	}
-
-	public function testAllocatingPriceByRatios(): void
-	{
-		$money = $this->buildMoney( 5, 'EUR' );
-		$money->expects( self::once() )
-		      ->method( 'allocateByRatios' );
-
-		iterator_to_array( NetBasedPrice::fromNetAmount( $money, new VatRate( 19 ) )->allocateByRatios( [ 3, 7 ] ) );
 	}
 }
