@@ -14,7 +14,6 @@
 ### Added
 * `TotalPrice::subtractPrice()`
 * `TotalPrice::getTotalsGroupedByVatRates()`
-* PHPStan, Composer scripts `test`, `analyse` and `check`
 
 ### Fixed
 * `VatRate::toInt()` rounds instead of truncating (e.g. 0.29 → 29)
