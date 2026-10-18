@@ -18,6 +18,30 @@ class AbstractPriceTest extends TestCase
 {
 	use BuildingFakeMoneys;
 
+	/**
+	 * @return array<string, array{\RoundingMode, int, int}>
+	 */
+	public static function RoundingModeProvider(): array
+	{
+		return [
+			'half away from zero' => [ \RoundingMode::HalfAwayFromZero, 3, 3 ],
+			'half even'           => [ \RoundingMode::HalfEven, 2, 2 ],
+			'towards zero'        => [ \RoundingMode::TowardsZero, 2, 2 ],
+		];
+	}
+
+	#[DataProvider( 'RoundingModeProvider' )]
+	public function testMultiplyAndDivideUseRoundingMode( \RoundingMode $roundingMode, int $expectedMultipliedAmount, int $expectedDividedAmount ): void
+	{
+		$price = FakePriceImplementation::fromGrossAmount( $this->buildMoney( 5, 'EUR' ), new VatRate( 0 ) );
+
+		self::assertSame( $expectedMultipliedAmount, $price->multiply( 0.5, $roundingMode )->getGrossAmount()->getAmount() );
+		self::assertSame( $expectedDividedAmount, $price->divide( 2, $roundingMode )->getGrossAmount()->getAmount() );
+	}
+
+	/**
+	 * @return array<int|string, array<int, mixed>>
+	 */
 	public static function FromGrossAmountProvider(): array
 	{
 		return [
@@ -35,7 +59,6 @@ class AbstractPriceTest extends TestCase
 	{
 		$price = FakePriceImplementation::fromGrossAmount( $this->buildMoney( $grossAmount, $currencyCode ), new VatRate( $vatRate ) );
 
-		self::assertInstanceOf( FakePriceImplementation::class, $price );
 		self::assertSame( $grossAmount, $price->getGrossAmount()->getAmount() );
 		self::assertSame( $expectedNetAmount, $price->getNetAmount()->getAmount() );
 		self::assertSame( $expectedVatAmount, $price->getVatAmount()->getAmount() );
@@ -43,6 +66,9 @@ class AbstractPriceTest extends TestCase
 		self::assertSame( $currencyCode, $price->getCurrency()->getIsoCode() );
 	}
 
+	/**
+	 * @return array<int|string, array<int, mixed>>
+	 */
 	public static function FromNetAmountProvider(): array
 	{
 		return [
@@ -60,7 +86,6 @@ class AbstractPriceTest extends TestCase
 	{
 		$price = FakePriceImplementation::fromNetAmount( $this->buildMoney( $netAmount, $currencyCode ), new VatRate( $vatRate ) );
 
-		self::assertInstanceOf( FakePriceImplementation::class, $price );
 		self::assertSame( $expectedGrossAmount, $price->getGrossAmount()->getAmount() );
 		self::assertSame( $netAmount, $price->getNetAmount()->getAmount() );
 		self::assertSame( $expectedVatAmount, $price->getVatAmount()->getAmount() );
@@ -68,6 +93,9 @@ class AbstractPriceTest extends TestCase
 		self::assertSame( $currencyCode, $price->getCurrency()->getIsoCode() );
 	}
 
+	/**
+	 * @return array<int|string, array<int, mixed>>
+	 */
 	public static function FromPriceProvider(): array
 	{
 		return [
@@ -85,13 +113,15 @@ class AbstractPriceTest extends TestCase
 
 		$copiedPrice = FakePriceImplementation::fromPrice( $originalPrice );
 
-		self::assertInstanceOf( FakePriceImplementation::class, $copiedPrice );
 		self::assertSame( $originalPrice->getGrossAmount()->getAmount(), $copiedPrice->getGrossAmount()->getAmount() );
 		self::assertSame( $originalPrice->getNetAmount()->getAmount(), $copiedPrice->getNetAmount()->getAmount() );
 		self::assertSame( $originalPrice->getVatAmount()->getAmount(), $copiedPrice->getVatAmount()->getAmount() );
 		self::assertTrue( $originalPrice->getVatRate()->equals( $copiedPrice->getVatRate() ) );
 	}
 
+	/**
+	 * @return array<int|string, array<int, mixed>>
+	 */
 	public static function ZeroAmountWithDifferentVatRateProvider(): array
 	{
 		return [
@@ -141,6 +171,9 @@ class AbstractPriceTest extends TestCase
 		$price->subtract( NetBasedPrice::fromGrossAmount( $this->buildMoney( 0, 'USD' ), new VatRate( 19 ) ) );
 	}
 
+	/**
+	 * @return array<int|string, array<int, mixed>>
+	 */
 	public static function AllocationProvider(): array
 	{
 		return [

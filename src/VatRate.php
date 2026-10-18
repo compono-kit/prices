@@ -5,25 +5,27 @@ namespace ComponoKit\Prices;
 use ComponoKit\Prices\Exceptions\InvalidVatRateException;
 use ComponoKit\Prices\Interfaces\RepresentsVatRate;
 
-class VatRate implements RepresentsVatRate
+class VatRate implements RepresentsVatRate, \Stringable
 {
+	private const int HUNDREDTHS_PER_PERCENT = 100;
+
 	private readonly int $hundredthsOfPercent;
 
-	public function __construct( float $value )
+	final public function __construct( float $value )
 	{
 		$this->validate( $value );
 
-		$this->hundredthsOfPercent = (int)round( $value * 100 );
+		$this->hundredthsOfPercent = (int)round( $value * self::HUNDREDTHS_PER_PERCENT );
 	}
 
 	public static function fromInt( int $value ): static
 	{
-		return new static( $value / 100 );
+		return new static( $value / self::HUNDREDTHS_PER_PERCENT );
 	}
 
 	public function toFloat(): float
 	{
-		return $this->hundredthsOfPercent / 100;
+		return $this->hundredthsOfPercent / self::HUNDREDTHS_PER_PERCENT;
 	}
 
 	public function toInt(): int

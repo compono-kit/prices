@@ -5,22 +5,22 @@ namespace ComponoKit\Prices\Tests\Unit\fakes;
 use ComponoKit\Money\Interfaces\BuildsMoneys;
 use ComponoKit\Money\Interfaces\RepresentsCurrency;
 use ComponoKit\Money\Interfaces\RepresentsMoney;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 
 trait BuildingFakeMoneys
 {
-	protected function buildCurrency( string $isoCode ): RepresentsCurrency&MockObject
+	protected function buildCurrency( string $isoCode ): RepresentsCurrency&Stub
 	{
-		$currency = $this->createMock( RepresentsCurrency::class );
+		$currency = $this->createStub( RepresentsCurrency::class );
 
 		$currency->method( 'getIsoCode' )->willReturn( $isoCode );
 
 		return $currency;
 	}
 
-	protected function buildMoney( int $amount, string $currencyCode ): RepresentsMoney&MockObject
+	protected function buildMoney( int $amount, string $currencyCode ): RepresentsMoney&Stub
 	{
-		$money = $this->createMock( RepresentsMoney::class );
+		$money = $this->createStub( RepresentsMoney::class );
 
 		$money->method( 'getAmount' )->willReturn( $amount );
 		$money->method( 'getCurrency' )->willReturn( $this->buildCurrency( $currencyCode ) );
@@ -44,13 +44,13 @@ trait BuildingFakeMoneys
 			}
 		);
 		$money->method( 'multiply' )->willReturnCallback(
-			function ( float $factor, int $roundingMode = PHP_ROUND_HALF_UP ) use ( $currencyCode, $amount ): RepresentsMoney
+			function ( float $factor, \RoundingMode $roundingMode = \RoundingMode::HalfAwayFromZero ) use ( $currencyCode, $amount ): RepresentsMoney
 			{
 				return $this->buildMoney( (int)round( $amount * $factor, 0, $roundingMode ), $currencyCode );
 			}
 		);
 		$money->method( 'divide' )->willReturnCallback(
-			function ( float $divisor, int $roundingMode = PHP_ROUND_HALF_UP ) use ( $currencyCode, $amount ): RepresentsMoney
+			function ( float $divisor, \RoundingMode $roundingMode = \RoundingMode::HalfAwayFromZero ) use ( $currencyCode, $amount ): RepresentsMoney
 			{
 				return $this->buildMoney( (int)round( $amount / $divisor, 0, $roundingMode ), $currencyCode );
 			}
@@ -64,7 +64,13 @@ trait BuildingFakeMoneys
 		$money->method( 'allocateByRatios' )->willReturnCallback(
 			function ( array $ratios ) use ( $currencyCode, $amount ): \Iterator
 			{
-				return $this->buildAllocatedMoneys( $amount, $ratios, $currencyCode );
+				$integerRatios = [];
+				foreach ( $ratios as $ratio )
+				{
+					$integerRatios[] = is_int( $ratio ) ? $ratio : 0;
+				}
+
+				return $this->buildAllocatedMoneys( $amount, $integerRatios, $currencyCode );
 			}
 		);
 
@@ -73,7 +79,7 @@ trait BuildingFakeMoneys
 
 	protected function buildMoneyFactory( string $currencyCode ): BuildsMoneys
 	{
-		$factory = $this->createMock( BuildsMoneys::class );
+		$factory = $this->createStub( BuildsMoneys::class );
 		$factory->method( 'build' )->willReturnCallback(
 			function ( int $amount ) use ( $currencyCode ): RepresentsMoney
 			{

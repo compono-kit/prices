@@ -12,6 +12,21 @@ use ComponoKit\Prices\Interfaces\RepresentsVatRate;
 
 class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 {
+	private const \Closure SELECT_GROSS_AMOUNT = static function ( RepresentsPrice $price ): RepresentsMoney
+	{
+		return $price->getGrossAmount();
+	};
+
+	private const \Closure SELECT_NET_AMOUNT = static function ( RepresentsPrice $price ): RepresentsMoney
+	{
+		return $price->getNetAmount();
+	};
+
+	private const \Closure SELECT_VAT_AMOUNT = static function ( RepresentsPrice $price ): RepresentsMoney
+	{
+		return $price->getVatAmount();
+	};
+
 	private readonly RepresentsMoney $initialMoney;
 
 	/**
@@ -19,7 +34,7 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 	 *
 	 * @throws InvalidPriceException
 	 */
-	public function __construct( private readonly BuildsMoneys $moneyFactory, private readonly array $prices = [] )
+	final public function __construct( private readonly BuildsMoneys $moneyFactory, private readonly array $prices = [] )
 	{
 		$this->initialMoney = $this->moneyFactory->build( 0 );
 
@@ -61,17 +76,17 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 
 	public function getTotalGrossAmount(): RepresentsMoney
 	{
-		return $this->sumAmounts( fn( RepresentsPrice $price ): RepresentsMoney => $price->getGrossAmount() );
+		return $this->sumAmounts( self::SELECT_GROSS_AMOUNT );
 	}
 
 	public function getTotalNetAmount(): RepresentsMoney
 	{
-		return $this->sumAmounts( fn( RepresentsPrice $price ): RepresentsMoney => $price->getNetAmount() );
+		return $this->sumAmounts( self::SELECT_NET_AMOUNT );
 	}
 
 	public function getTotalVatAmount(): RepresentsMoney
 	{
-		return $this->sumAmounts( fn( RepresentsPrice $price ): RepresentsMoney => $price->getVatAmount() );
+		return $this->sumAmounts( self::SELECT_VAT_AMOUNT );
 	}
 
 	/**
@@ -131,7 +146,14 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 
 		foreach ( $this->getPricesGroupedByVatRates() as $vatRate => $prices )
 		{
-			$total = $priceClass::fromPrice( array_shift( $prices ) );
+			$firstPrice = array_shift( $prices );
+
+			if ( null === $firstPrice )
+			{
+				continue;
+			}
+
+			$total = $priceClass::fromPrice( $firstPrice );
 
 			foreach ( $prices as $price )
 			{
@@ -158,6 +180,21 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 	}
 
 	/**
+	 * @param \Closure(RepresentsPrice): RepresentsMoney $selectAmount
+	 */
+	private function sumAmounts( \Closure $selectAmount ): RepresentsMoney
+	{
+		$totalAmount = $this->initialMoney;
+
+		foreach ( $this->prices as $price )
+		{
+			$totalAmount = $totalAmount->add( $selectAmount( $price ) );
+		}
+
+		return $totalAmount;
+	}
+
+	/**
 	 * @return array{currencyCode: string, prices: object}
 	 */
 	public function jsonSerialize(): array
@@ -180,21 +217,6 @@ class TotalPrice implements RepresentsTotalPrice, \JsonSerializable
 			'currencyCode' => $this->getCurrency()->getIsoCode(),
 			'prices'       => (object)$pricesGroupedByVatRates,
 		];
-	}
-
-	/**
-	 * @param callable(RepresentsPrice): RepresentsMoney $selectAmount
-	 */
-	private function sumAmounts( callable $selectAmount ): RepresentsMoney
-	{
-		$totalAmount = $this->initialMoney;
-
-		foreach ( $this->prices as $price )
-		{
-			$totalAmount = $totalAmount->add( $selectAmount( $price ) );
-		}
-
-		return $totalAmount;
 	}
 
 	private function validateCurrency( RepresentsPrice $price ): void

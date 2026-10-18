@@ -6,7 +6,7 @@
 
 The token is passed to Composer at runtime via `COMPOSER_AUTH` and is not stored in the image.
 
-### Tests and static analysis
+### Tests
 
 * `docker-compose run --rm prices_composer test`
 * `docker-compose run --rm prices_composer analyse`

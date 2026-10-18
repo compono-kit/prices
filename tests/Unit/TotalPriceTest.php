@@ -82,7 +82,7 @@ class TotalPriceTest extends TestCase
 	{
 		self::assertEquals(
 			[ new VatRate( 19 ), new VatRate( 7 ), new VatRate( 16.5 ) ],
-			(new TotalPrice( $this->buildMoneyFactory( 'EUR' ), $this->createListOfPrices() ))->getVatRates()
+			new TotalPrice( $this->buildMoneyFactory( 'EUR' ), $this->createListOfPrices() )->getVatRates()
 		);
 	}
 
@@ -106,7 +106,7 @@ class TotalPriceTest extends TestCase
 					FakePriceImplementation::fromGrossAmount( $this->buildMoney( 300, 'EUR' ), new VatRate( 16.5 ) ),
 				],
 			],
-			(new TotalPrice( $this->buildMoneyFactory( 'EUR' ), $this->createListOfPrices() ))->getPricesGroupedByVatRates()
+			new TotalPrice( $this->buildMoneyFactory( 'EUR' ), $this->createListOfPrices() )->getPricesGroupedByVatRates()
 		);
 	}
 
@@ -153,7 +153,7 @@ class TotalPriceTest extends TestCase
 
 	public function testGettingCurrency(): void
 	{
-		self::assertSame( 'USD', (new TotalPrice( $this->buildMoneyFactory( 'USD' ) ))->getCurrency()->getIsoCode() );
+		self::assertSame( 'USD', new TotalPrice( $this->buildMoneyFactory( 'USD' ) )->getCurrency()->getIsoCode() );
 	}
 
 	public function testInstantiatingWithPriceOfDifferentCurrencyThrowsException(): void
@@ -171,14 +171,14 @@ class TotalPriceTest extends TestCase
 	{
 		$this->expectException( InvalidPriceException::class );
 
-		(new TotalPrice( $this->buildMoneyFactory( 'EUR' ) ))->addPrice(
+		new TotalPrice( $this->buildMoneyFactory( 'EUR' ) )->addPrice(
 			GrossBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'USD' ), new VatRate( 19 ) )
 		);
 	}
 
 	public function testSummingPricesWithDifferentVatRates(): void
 	{
-		$totalPrice = (new TotalPrice( $this->buildMoneyFactory( 'EUR' ) ))
+		$totalPrice = new TotalPrice( $this->buildMoneyFactory( 'EUR' ) )
 			->addPrice( GrossBasedPrice::fromGrossAmount( $this->buildMoney( 119, 'EUR' ), new VatRate( 19 ) ) )
 			->addPrice( NetBasedPrice::fromGrossAmount( $this->buildMoney( 107, 'EUR' ), new VatRate( 7 ) ) );
 
@@ -189,7 +189,7 @@ class TotalPriceTest extends TestCase
 
 	public function testSubtractingPrice(): void
 	{
-		$totalPrice = (new TotalPrice( $this->buildMoneyFactory( 'EUR' ) ))
+		$totalPrice = new TotalPrice( $this->buildMoneyFactory( 'EUR' ) )
 			->addPrice( GrossBasedPrice::fromGrossAmount( $this->buildMoney( 119, 'EUR' ), new VatRate( 19 ) ) )
 			->addPrice( GrossBasedPrice::fromGrossAmount( $this->buildMoney( 107, 'EUR' ), new VatRate( 7 ) ) )
 			->subtractPrice( GrossBasedPrice::fromGrossAmount( $this->buildMoney( 119, 'EUR' ), new VatRate( 19 ) ) );
@@ -200,6 +200,9 @@ class TotalPriceTest extends TestCase
 		self::assertSame( 7, $totalPrice->getTotalVatAmount()->getAmount() );
 	}
 
+	/**
+	 * @return array<int, array{class-string<AbstractPrice>, array<int, array{0:int, 1:int}>}>
+	 */
 	public static function TotalsGroupedByVatRatesProvider(): array
 	{
 		return [
@@ -243,11 +246,11 @@ class TotalPriceTest extends TestCase
 	{
 		$this->expectException( \InvalidArgumentException::class );
 
-		(new TotalPrice( $this->buildMoneyFactory( 'EUR' ) ))->getTotalsGroupedByVatRates( VatRate::class );
+		new TotalPrice( $this->buildMoneyFactory( 'EUR' ) )->getTotalsGroupedByVatRates( VatRate::class );
 	}
 
 	/**
-	 * @return RepresentsPrice[]
+	 * @return array<int, RepresentsPrice>
 	 */
 	private function createListOfPrices(): array
 	{

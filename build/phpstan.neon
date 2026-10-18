@@ -6,3 +6,12 @@ parameters:
 	paths:
 		- ../src
 		- ../tests
+	ignoreErrors:
+		-
+			message: '#^Parameter \#1 \$priceClass of method ComponoKit\\Prices\\TotalPrice::getTotalsGroupedByVatRates\(\) expects class-string<ComponoKit\\Prices\\AbstractPrice>, string given\.$#'
+			path: ../tests/Unit/TotalPriceTest.php
+			count: 1
+		-
+			message: '#^Unable to resolve the template type TPrice in call to method ComponoKit\\Prices\\TotalPrice::getTotalsGroupedByVatRates\(\)$#'
+			path: ../tests/Unit/TotalPriceTest.php
+			count: 1

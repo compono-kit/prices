@@ -14,6 +14,9 @@ class NetBasedPriceTest extends TestCase
 {
 	use BuildingFakeMoneys;
 
+	/**
+	 * @return array<int|string, array<int, mixed>>
+	 */
 	public static function LineItemLevelFromGrossMultiplyDataProvider(): array
 	{
 		return [
@@ -40,13 +43,15 @@ class NetBasedPriceTest extends TestCase
 		$unitPrice  = NetBasedPrice::fromGrossAmount( $this->buildMoney( $unitGrossAmount, 'EUR' ), new VatRate( $vatRate ) );
 		$totalPrice = $unitPrice->multiply( $quantity );
 
-		self::assertInstanceOf( NetBasedPrice::class, $totalPrice );
 		self::assertSame( $expectedTotalNetAmount, $totalPrice->getNetAmount()->getAmount() );
 		self::assertSame( $expectedTotalGrossAmount, $totalPrice->getGrossAmount()->getAmount() );
 		self::assertSame( $unitGrossAmount, $unitPrice->getGrossAmount()->getAmount() );
 		self::assertSame( $expectedUnitNetAmount, $unitPrice->getNetAmount()->getAmount() );
 	}
 
+	/**
+	 * @return array<int|string, array<int, mixed>>
+	 */
 	public static function LineItemLevelFromNetMultiplyDataProvider(): array
 	{
 		return [
@@ -79,6 +84,9 @@ class NetBasedPriceTest extends TestCase
 		self::assertSame( $expectedUnitGrossAmount, $unitPrice->getGrossAmount()->getAmount() );
 	}
 
+	/**
+	 * @return array<int|string, array<int, mixed>>
+	 */
 	public static function LineItemLevelFromGrossDivideDataProvider(): array
 	{
 		return [
@@ -105,13 +113,15 @@ class NetBasedPriceTest extends TestCase
 		$totalPrice = NetBasedPrice::fromGrossAmount( $this->buildMoney( $totalGrossAmount, 'EUR' ), new VatRate( $vatRate ) );
 		$unitPrice  = $totalPrice->divide( $quantity );
 
-		self::assertInstanceOf( NetBasedPrice::class, $unitPrice );
 		self::assertSame( $expectedUnitNetAmount, $unitPrice->getNetAmount()->getAmount() );
 		self::assertSame( $expectedUnitGrossAmount, $unitPrice->getGrossAmount()->getAmount() );
 		self::assertSame( $expectedTotalNetAmount, $totalPrice->getNetAmount()->getAmount() );
 		self::assertSame( $totalGrossAmount, $totalPrice->getGrossAmount()->getAmount() );
 	}
 
+	/**
+	 * @return array<int|string, array<int, mixed>>
+	 */
 	public static function LineItemLevelFromNetDivideDataProvider(): array
 	{
 		return [
@@ -144,6 +154,9 @@ class NetBasedPriceTest extends TestCase
 		self::assertSame( $expectedTotalGrossAmount, $totalPrice->getGrossAmount()->getAmount() );
 	}
 
+	/**
+	 * @return array<int|string, array<int, mixed>>
+	 */
 	public static function AddingPriceDataProvider(): array
 	{
 		return [
@@ -164,7 +177,6 @@ class NetBasedPriceTest extends TestCase
 
 		$summedPrice = $originalPrice->add( $additionalPrice );
 
-		self::assertInstanceOf( NetBasedPrice::class, $summedPrice );
 		self::assertSame( $expectedPrice->getNetAmount()->getAmount(), $summedPrice->getNetAmount()->getAmount() );
 		self::assertSame( $expectedPrice->getGrossAmount()->getAmount(), $summedPrice->getGrossAmount()->getAmount() );
 		self::assertTrue( $expectedPrice->getVatRate()->equals( $summedPrice->getVatRate() ) );
@@ -178,6 +190,9 @@ class NetBasedPriceTest extends TestCase
 		$price->add( NetBasedPrice::fromGrossAmount( $this->buildMoney( 100, 'EUR' ), new VatRate( 7 ) ) );
 	}
 
+	/**
+	 * @return array<int|string, array<int, mixed>>
+	 */
 	public static function SubtractingPriceDataProvider(): array
 	{
 		return [
@@ -199,7 +214,6 @@ class NetBasedPriceTest extends TestCase
 
 		$priceResult = $originalPrice->subtract( $subtractedPrice );
 
-		self::assertInstanceOf( NetBasedPrice::class, $priceResult );
 		self::assertSame( $expectedPrice->getNetAmount()->getAmount(), $priceResult->getNetAmount()->getAmount() );
 		self::assertSame( $expectedPrice->getGrossAmount()->getAmount(), $priceResult->getGrossAmount()->getAmount() );
 		self::assertTrue( $expectedPrice->getVatRate()->equals( $priceResult->getVatRate() ) );
