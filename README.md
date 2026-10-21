@@ -18,7 +18,7 @@ PHP types representing prices. A price includes the gross, net and VAT amount as
 
 ## Requirements
 
-* PHP >= 8.3
+* PHP >= 8.5
 * compono-kit/money-interfaces
 * compono-kit/price-interfaces
 

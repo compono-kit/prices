@@ -9,6 +9,9 @@ use PHPUnit\Framework\TestCase;
 
 class VatRateTest extends TestCase
 {
+	/**
+	 * @return array<int|string, array<int, mixed>>
+	 */
 	public static function FloatValueProvider(): array
 	{
 		return [
@@ -39,6 +42,9 @@ class VatRateTest extends TestCase
 		new VatRate( -1 );
 	}
 
+	/**
+	 * @return array<int|string, array<int, mixed>>
+	 */
 	public static function IntegerValueProvider(): array
 	{
 		return [

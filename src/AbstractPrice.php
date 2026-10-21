@@ -10,7 +10,13 @@ use ComponoKit\Prices\Interfaces\RepresentsVatRate;
 
 abstract class AbstractPrice implements RepresentsPrice, \JsonSerializable
 {
-	final protected function __construct( protected readonly RepresentsMoney $netAmount, protected readonly RepresentsMoney $grossAmount, protected readonly RepresentsVatRate $vatRate )
+	private const int VAT_RATE_SCALE = 10000;
+
+	final protected function __construct(
+		final protected readonly RepresentsMoney $netAmount,
+		final protected readonly RepresentsMoney $grossAmount,
+		final protected readonly RepresentsVatRate $vatRate
+	)
 	{
 	}
 
@@ -66,14 +72,14 @@ abstract class AbstractPrice implements RepresentsPrice, \JsonSerializable
 		return $this->grossAmount->getCurrency();
 	}
 
-	public function multiply( float $quantity ): static
+	public function multiply( float $quantity, \RoundingMode $roundingMode = \RoundingMode::HalfAwayFromZero ): static
 	{
-		return static::fromBaseAmount( $this->getBaseAmount()->multiply( $quantity ), $this->vatRate );
+		return static::fromBaseAmount( $this->getBaseAmount()->multiply( $quantity, $roundingMode ), $this->vatRate );
 	}
 
-	public function divide( float $quantity ): static
+	public function divide( float $quantity, \RoundingMode $roundingMode = \RoundingMode::HalfAwayFromZero ): static
 	{
-		return static::fromBaseAmount( $this->getBaseAmount()->divide( $quantity ), $this->vatRate );
+		return static::fromBaseAmount( $this->getBaseAmount()->divide( $quantity, $roundingMode ), $this->vatRate );
 	}
 
 	/**
@@ -192,6 +198,6 @@ abstract class AbstractPrice implements RepresentsPrice, \JsonSerializable
 
 	private static function buildGrossMultiplier( RepresentsVatRate $vatRate ): float
 	{
-		return 1 + ($vatRate->toInt() / 10000);
+		return 1 + ($vatRate->toInt() / self::VAT_RATE_SCALE);
 	}
 }

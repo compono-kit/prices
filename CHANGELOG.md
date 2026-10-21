@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## [4.0.0] - 2026-10-14
+
+### Changed
+* [BC] Requires PHP 8.5, `compono-kit/money-interfaces` ^2.0 and `compono-kit/price-interfaces` ^2.0
+* [BC] `multiply()` and `divide()` accept an optional `\RoundingMode`, the default is `\RoundingMode::HalfAwayFromZero`
+* [BC] The constructors of `TotalPrice` and `VatRate` are `final`
+* [BC] The promoted properties of `AbstractPrice` are `final`
+* `VatRate` implements `\Stringable`
+* `TotalPrice` sums the amounts with closures stored in class constants
+* Uses PHPUnit 12 and the current PHPStan 2
+
+### Removed
+* Requirement of `ext-json`, which is always available since PHP 8.0
+
+### Fixed
+* `TotalPrice::fromTotalPrice()` called `getMoneyFactory()`, which was not part of `RepresentsTotalPrice`
+* PHPStan errors on level max in sources and tests
+
+---
+
 ## [3.0.0] - 2026-10-09
 
 ### Changed
